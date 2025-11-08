@@ -40,7 +40,9 @@ body {
 }
 
 .wrapper {
-	width: 100%;
+	margin: 0 auto;
+	width: 90%;
+	background-color: #333;
 	height: 100%;
 }
 
@@ -49,12 +51,16 @@ h1 {
 }
 
 @media (min-width: 768px) {
-
+	.wrapper {
+		width: 85%;
+	}
 }
 
 
 @media (min-width: 1024px) {
-
+	.wrapper {
+		width: 80%;
+	}
 }
 
 
