@@ -455,7 +455,7 @@ body {
 	display: flex;
 	width: 100%;
 	justify-content: space-around;
-	padding-top: 2rem;
+	padding-top: 1rem;
 }
 
 .links__item {
