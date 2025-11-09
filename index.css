@@ -31,11 +31,6 @@ html {
 	-ms-overflow-style: none;
 }
 
-@keyframes moveUp {
-	from { opacity: 0; }
-	to { opacity: 1; }
-}
-
 
 body {
 	font-family: 'DM Sans', sans-serif;
@@ -64,10 +59,22 @@ body {
 }
 
 .header__reg {
+	text-decoration: none;
 	cursor: pointer;
 	color: var(--neutral-color);
 	font-size: 1rem;
 	text-align: center;
+	transition: all 0.2s ease-in-out;
+}
+
+.header__reg-opened {
+	font-size: 1rem;
+	padding: 0.75rem 1.25rem;
+	text-decoration: none;
+	color: var(--light-color);
+	background-image: var(--gradient-color);
+	border-radius: 10px;
+	transition: all 0.2s ease-in-out;
 }
 
 .hero {
@@ -119,6 +126,7 @@ body {
 	-webkit-background-clip: text;
 	-webkit-text-fill-color: transparent;
 	margin-bottom: 2vh;
+	transition: all 0.2s ease-in-out;
 }
 
 .steps__container-text {
@@ -228,6 +236,7 @@ body {
 	border-radius: 10px;
 	color: var(--dark-color);
 	background-color: var(--light-color);
+	transition: all 0.2s ease-in-out;
 }
 
 .button__enabled > svg {
@@ -236,7 +245,9 @@ body {
 }
 
 .button__enabled svg path {
-	fill: var(--dark-color)
+	fill: var(--dark-color);
+	transition: all 0.2s ease-in-out;
+
 }
 
 .button__disabled {
@@ -266,6 +277,7 @@ body {
 .button__selected > svg {
 	width: 1.5rem;
 	margin-right: 1rem;
+	transition: all 0.2s ease-in-out;
 }
 
 .button__selected > svg path {
@@ -350,6 +362,7 @@ body {
 	position: absolute;
 	width: 1.2rem;
 	left: 1rem;
+	transition: all 0.2s ease-in-out;
 }
 
 .reg__name input {
@@ -382,6 +395,7 @@ body {
 	position: absolute;
 	width: 1.2rem;
 	left: 1rem;
+	transition: all 0.2s ease-in-out;
 }
 
 .reg__class input {
@@ -439,6 +453,7 @@ body {
 	color: var(--light-color);
 	background-image: var(--gradient-color);
 	border-radius: 10px;
+	transition: all 0.2s ease-in-out;
 }
 
 .footer {
@@ -469,15 +484,40 @@ body {
 	width: 1.5rem;
 }
 
+.links__item svg path {
+	transition: all 0.2s ease-in-out;
+}
+
 .links__item a {
 	font-size: 1.2rem;
 	text-decoration: none;
 	color: var(--neutral-color);
+	transition: all 0.2s ease-in-out;
+
 }
 
 .footer__title {
+	cursor: pointer;
+	text-decoration: none;
 	color: var(--light-color);
 	font-size: 15vw;
+	position: relative;
+	overflow: hidden;
+	display: inline-block;
+}
+
+.footer__title::before {
+	content: 'PROGRAMY';
+	position: absolute;
+	top: 100%;
+	left: 0;
+	width: 100%;
+	transition: top 0.3s ease-in-out;
+}
+
+.footer__title span {
+	display: inline-block;
+	transition: transform 0.3s ease-in-out, opacity 0.3s ease-in-out;
 }
 
 @media (min-width: 768px) {
@@ -487,6 +527,11 @@ body {
 
 	.header__reg {
 		font-size: 1.2rem;
+	}
+
+	.header__reg-opened {
+		font-size: 1.2rem;
+		padding: 1rem 1.5rem;
 	}
 
 	.hero {
@@ -573,6 +618,7 @@ body {
 		position: absolute;
 		width: 1.5rem;
 		left: 1.5rem;
+		transition: all 0.2s ease-in-out;
 	}
 
 	.reg__name input {
@@ -645,6 +691,11 @@ body {
 		font-size: 1.5rem;
 	}
 
+	.header__reg-opened {
+		font-size: 1.5rem;
+		padding: 1rem 1.75rem;
+	}
+
 	.hero__quote {
 		font-size: 6rem;
 	}
@@ -670,4 +721,87 @@ body {
 		font-size: 6rem;
 		margin-bottom: 5vh;
 	}
+}
+
+@media (hover: hover) {
+	.header__reg:hover {
+		transform: scale(1.02);
+	}
+
+	.steps__container-title:hover,
+	.header__reg-opened:hover {
+		transform: scale(1.05);
+	}
+
+	.button__enabled:hover {
+		transform: scale(1.05);
+		color: var(--light-color);
+		background-color: var(--dark-color);
+	}
+
+	.button__enabled:hover svg path {
+		fill: var(--light-color)
+	}
+
+	.button__selected > svg:hover {
+		transform: scale(1.05);
+	}
+
+	.reg__button:hover {
+		transform: scale(1.02);
+	}
+
+	.reg__name svg:hover,
+	.reg__class svg:hover {
+		transform: scale(1.1);
+	}
+
+	.links__item:hover a {
+		color: var(--light-color);
+	}
+
+	.links__item:hover svg path {
+		fill: var(--light-color);
+	}
+
+	.footer__title:hover span {
+		transform: translateY(-100%);
+		opacity: 0;
+	}
+
+	.footer__title:hover::before {
+		top: 0;
+	}
+}
+
+.header__reg:active {
+	transform: scale(1.02);
+}
+
+.steps__container-title:active,
+.header__reg-opened:hover {
+	transform: scale(1.05);
+}
+
+.button__enabled:active {
+	transform: scale(1.05);
+	color: var(--light-color);
+	background-color: var(--dark-color);
+}
+
+.button__enabled:active svg path {
+	fill: var(--light-color)
+}
+
+.button__selected > svg:active {
+	transform: scale(1.05);
+}
+
+.reg__button:active {
+	transform: scale(1.02);
+}
+
+.reg__name svg:active,
+.reg__class svg:active {
+	transform: scale(1.1);
 }
