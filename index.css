@@ -226,8 +226,8 @@ body {
 	display: flex;
 	align-items: center;
 	justify-content: center;
-	padding: 1rem 1.5rem;
-	font-size: 1.5rem;
+	padding: 0.75rem 1.25rem;
+	font-size: 1.2rem;
 }
 
 .button__enabled {
@@ -240,8 +240,8 @@ body {
 }
 
 .button__enabled > svg {
-	width: 1.5rem;
-	margin-right: 1rem;
+	width: 1.2rem;
+	margin-right: 0.75rem;
 }
 
 .button__enabled svg path {
@@ -258,8 +258,8 @@ body {
 }
 
 .button__disabled > svg {
-	width: 1.5rem;
-	margin-right: 1rem;
+	width: 1.2rem;
+	margin-right: 0.75rem;
 }
 
 .button__disabled > svg path {
@@ -275,8 +275,8 @@ body {
 }
 
 .button__selected > svg {
-	width: 1.5rem;
-	margin-right: 1rem;
+	width: 1.2rem;
+	margin-right: 0.75rem;
 	transition: all 0.2s ease-in-out;
 }
 
@@ -287,9 +287,10 @@ body {
 .button__unselect {
 	background-color: var(--light-color);
 	position: absolute;
-	width: 2rem !important;
+	border-radius: 100%;
+	width: 1.5rem !important;
 	cursor: pointer;
-	top: -1rem;
+	top: -0.75rem;
 	right: -2rem;
 }
 
@@ -298,9 +299,9 @@ body {
 }
 
 .program__capacity {
-	padding: 1rem 1.5rem;
+	padding: 0.75rem 1.25rem;
 	border-radius: 10px;
-	font-size: 1.5rem;
+	font-size: 1.2rem;
 	color: var(--dark-color);
 	text-align: center;
 }
@@ -380,6 +381,11 @@ body {
 	color: var(--neutral-color);
 }
 
+.reg__name input:disabled,
+.reg__class input:disabled {
+	background-color: var(--light-color);
+}
+
 .reg__class {
 	position: relative;
 	display: flex;
@@ -417,14 +423,10 @@ body {
 	display: flex;
 }
 
-.reg__checkmark {
+.reg__checkbox {
 	cursor: pointer;
 	min-width: 1.5rem;
-	min-height: 1.5rem;
 	width: 1.5rem;
-	height: 1.5rem;
-	border: 2px solid var(--neutral-color);
-	border-radius: 5px;
 	margin-right: 1rem;
 }
 
@@ -582,23 +584,23 @@ body {
 	}
 
 	.program__button {
-		padding: 1.25rem 1.75rem;
-		font-size: 2rem;
+		padding: 1rem 1.5rem;
+		font-size: 1.5rem;
 		border-radius: 15px;
 	}
 
 	.program__button > svg {
-		width: 2rem;
+		width: 1.5rem;
 	}
 
 	.program__capacity {
-		padding: 1.25rem 1.75rem;
+		padding: 1rem 1.5rem;
 		border-radius: 15px;
-		font-size: 2rem;
+		font-size: 1.5rem;
 	}
 
 	.button__unselect {
-		width: 2.5rem !important;
+		width: 2.25rem !important;
 	}
 
 	.action__text-dark {
