@@ -7,6 +7,7 @@
 	--neutral-color: #CCC;
 	--blue-color: #1A3FB2;
 	--red-color: #D7141A;
+	--green-color: #28A745;
 	--gradient-color: linear-gradient(45deg, #1A3FB2 0%, #D7141A 100%);
 }
 
@@ -63,6 +64,7 @@ body {
 }
 
 .header__reg {
+	cursor: pointer;
 	color: var(--neutral-color);
 	font-size: 1rem;
 	text-align: center;
@@ -165,6 +167,318 @@ body {
 	margin-bottom: 1rem;
 }
 
+.programs {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	width: 80%;
+	margin: 0 auto;
+	margin-top: 10vh;
+}
+
+.programs__title {
+	font-size: 2.5rem;
+	background: var(--gradient-color);
+	background-clip: text;
+	-webkit-background-clip: text;
+	-webkit-text-fill-color: transparent;
+	margin-bottom: 2vh;
+}
+
+.programs__program {
+	display: flex;
+	flex-direction: column;
+	align-items: left;
+	width: 100%;
+	margin-bottom: 5vh;
+}
+
+.program__person {
+	font-size: 1.2rem;
+}
+
+.program__title {
+	font-size: 2rem;
+	margin-top: -0.25rem;
+	margin-bottom: 0.25rem;
+}
+
+.program__description {
+	font-size: 1.2rem;
+	color: var(--dark-color);
+	margin-bottom: 1rem;
+}
+
+.program__buttons {
+	display: flex;
+	justify-content: space-between;
+}
+
+.program__button {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	padding: 1rem 1.5rem;
+	font-size: 1.5rem;
+}
+
+.button__enabled {
+	cursor: pointer;
+	border: 2px solid var(--dark-color);
+	border-radius: 10px;
+	color: var(--dark-color);
+	background-color: var(--light-color);
+}
+
+.button__enabled > svg {
+	width: 1.5rem;
+	margin-right: 1rem;
+}
+
+.button__enabled svg path {
+	fill: var(--dark-color)
+}
+
+.button__disabled {
+	border: 2px solid var(--neutral-color);
+	border-radius: 10px;
+	color: var(--neutral-color);
+	background-color: var(--light-color);
+}
+
+.button__disabled > svg {
+	width: 1.5rem;
+	margin-right: 1rem;
+}
+
+.button__disabled > svg path {
+	fill: var(--neutral-color);
+}
+
+.button__selected {
+	position: relative;
+	border: 2px solid var(--green-color);
+	border-radius: 10px;
+	color: var(--green-color);
+	background-color: var(--light-color);
+}
+
+.button__selected > svg {
+	width: 1.5rem;
+	margin-right: 1rem;
+}
+
+.button__selected > svg path {
+	fill: var(--green-color);
+}
+
+.button__unselect {
+	background-color: var(--light-color);
+	position: absolute;
+	width: 2rem !important;
+	cursor: pointer;
+	top: -1rem;
+	right: -2rem;
+}
+
+.button__unselect path {
+	fill: var(--neutral-color) !important;
+}
+
+.program__capacity {
+	padding: 1rem 1.5rem;
+	border-radius: 10px;
+	font-size: 1.5rem;
+	color: var(--dark-color);
+	text-align: center;
+}
+
+.capacity__available {
+	border: 2px solid var(--blue-color);
+}
+
+.capacity__full {
+	border: 2px solid var(--red-color);
+}
+
+.action {
+	text-align: center;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	flex-direction: column;
+	width: 80%;
+	margin: 0 auto;
+	margin-top: 10vh;
+}
+
+.action__text-dark {
+	font-size: 2rem;
+	margin-bottom: -0.5rem;
+}
+
+.action__text-gradient {
+	font-size: 2.5rem;
+	background: var(--gradient-color);
+	background-clip: text;
+	-webkit-background-clip: text;
+	-webkit-text-fill-color: transparent;
+	margin-bottom: 3vh;
+}
+
+.action__reg {
+	display: flex;
+	width: 100%;
+	flex-direction: column;
+	justify-content: center;
+	align-items: center;
+	gap: 2rem;
+}
+
+.reg__name {
+	cursor: pointer;
+	position: relative;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	border: 2px solid var(--neutral-color);
+	border-radius: 10px;
+	width: 100%;
+}
+
+.reg__name svg {
+	position: absolute;
+	width: 1.2rem;
+	left: 1rem;
+}
+
+.reg__name input {
+	font-family: "DM Sans", sans-serif;
+	font-size: 1.2rem;
+	width: calc(100% - 6rem);
+	color: var(--dark-color);
+	border: none;
+	outline: none;
+	padding: 1rem;
+}
+
+.reg__name input::placeholder {
+	font-size: 1.2rem;
+	color: var(--neutral-color);
+}
+
+.reg__class {
+	position: relative;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	border: 2px solid var(--neutral-color);
+	border-radius: 10px;
+	width: 100%;
+}
+
+.reg__class svg {
+	cursor: pointer;
+	position: absolute;
+	width: 1.2rem;
+	left: 1rem;
+}
+
+.reg__class input {
+	font-family: "DM Sans", sans-serif;
+	font-size: 1.2rem;
+	width: calc(100% - 6rem);
+	color: var(--dark-color);
+	border: none;
+	outline: none;
+	padding: 1rem;
+}
+
+.reg__class input::placeholder {
+	font-size: 1.2rem;
+	color: var(--neutral-color);
+}
+
+.reg__accept {
+	display: flex;
+}
+
+.reg__checkmark {
+	cursor: pointer;
+	min-width: 1.5rem;
+	min-height: 1.5rem;
+	width: 1.5rem;
+	height: 1.5rem;
+	border: 2px solid var(--neutral-color);
+	border-radius: 5px;
+	margin-right: 1rem;
+}
+
+.reg__accept span {
+	font-size: 1.2rem;
+	color: var(--dark-color);
+	text-align: left;
+}
+
+.reg__accept a {
+	cursor: pointer;
+	background: var(--gradient-color);
+	background-clip: text;
+	-webkit-background-clip: text;
+	-webkit-text-fill-color: transparent;
+	text-decoration: none;
+}
+
+.reg__button {
+	font-family: 'DM Sans', sans-serif;
+	cursor: pointer;
+	border: none;
+	outline: none;
+	padding: 1rem 1.5rem;
+	font-size: 1.2rem;
+	color: var(--light-color);
+	background-image: var(--gradient-color);
+	border-radius: 10px;
+}
+
+.footer {
+	display: flex;
+	flex-direction: column;
+	justify-content: space-around;
+	align-items: center;
+	background-color: var(--dark-color);
+	margin-top: 10vh;
+
+}
+
+.footer__links {
+	display: flex;
+	width: 100%;
+	justify-content: space-around;
+	padding-top: 2rem;
+}
+
+.links__item {
+	display: flex;
+	align-items: center;
+	cursor: pointer;
+	gap: 1rem
+}
+
+.links__item svg {
+	width: 1.5rem;
+}
+
+.links__item a {
+	font-size: 1.2rem;
+	text-decoration: none;
+	color: var(--neutral-color);
+}
+
+.footer__title {
+	color: var(--light-color);
+	font-size: 15vw;
+}
 
 @media (min-width: 768px) {
 	.header__flag {
@@ -203,8 +517,124 @@ body {
 		font-size: 1.5rem;
 		margin: 1rem 0;
 	}
-}
 
+	.programs__title {
+		font-size: 4rem;
+		margin-bottom: 3vh;
+	}
+
+	.program__person {
+	font-size: 1.5rem;
+	}
+
+	.program__title {
+		font-size: 4rem;
+	}
+
+	.program__description {
+		font-size: 1.5rem;
+		margin-bottom: 1.5rem;
+	}
+
+	.program__button {
+		padding: 1.25rem 1.75rem;
+		font-size: 2rem;
+		border-radius: 15px;
+	}
+
+	.program__button > svg {
+		width: 2rem;
+	}
+
+	.program__capacity {
+		padding: 1.25rem 1.75rem;
+		border-radius: 15px;
+		font-size: 2rem;
+	}
+
+	.button__unselect {
+		width: 2.5rem !important;
+	}
+
+	.action__text-dark {
+		font-size: 4rem;
+		margin-bottom: -1vh;
+	}
+	.action__text-gradient {
+		font-size: 5rem;
+		margin-bottom: 4vh;
+	}
+
+	.reg__name {
+		width: 70%;
+	}
+
+	.reg__name svg {
+		position: absolute;
+		width: 1.5rem;
+		left: 1.5rem;
+	}
+
+	.reg__name input {
+		font-family: "DM Sans", sans-serif;
+		font-size: 1.5rem;
+		width: calc(100% - 8rem);
+		color: var(--dark-color);
+		border: none;
+		outline: none;
+		padding: 1rem;
+	}
+
+	.reg__name input::placeholder {
+		font-size: 1.5rem;
+		color: var(--neutral-color);
+	}
+
+	.reg__class {
+		width: 70%;
+	}
+
+	.reg__class svg {
+		position: absolute;
+		width: 1.5rem;
+		left: 1.5rem;
+	}
+
+	.reg__class input {
+		font-family: "DM Sans", sans-serif;
+		font-size: 1.5rem;
+		width: calc(100% - 8rem);
+		color: var(--dark-color);
+		border: none;
+		outline: none;
+		padding: 1rem;
+	}
+
+	.reg__class input::placeholder {
+		font-size: 1.5rem;
+		color: var(--neutral-color);
+	}
+
+	.reg__accept span {
+		font-size: 1.5rem;
+	}
+
+	.reg__button {
+		padding: 1.25rem 1.75rem;
+		font-size: 1.5rem;
+		border-radius: 15px;
+	}
+
+	.links__item svg {
+		width: 2rem;
+	}
+
+	.links__item a {
+		font-size: 1.5rem;
+		text-decoration: none;
+		color: var(--neutral-color);
+	}
+}
 
 @media (min-width: 1024px) {
 	.header__flag {
@@ -235,6 +665,9 @@ body {
 		font-size: 2rem;
 		margin: 1.5rem 0;
 	}
+
+	.programs__title {
+		font-size: 6rem;
+		margin-bottom: 5vh;
+	}
 }
-
-
