@@ -1,4 +1,4 @@
-const targetDate = new Date('2025-11-11T00:00:00+01:00');
+const targetDate = new Date('2025-11-01T00:00:00+01:00');
 
 function updateCountdown() {
     const now = new Date();
@@ -163,10 +163,57 @@ function updateConfirmationButton() {
             confirmButton.className = 'confirmation__button';
             confirmButton.type = 'button';
             confirmButton.innerHTML = `${firstProgram}, ${secondProgram} &#8211; Potvrdit?`;
-            confirmButton.addEventListener('click', () => {
-                // Handle confirmation
-                alert('Programy potvrzeny!');
-                // You can add more logic here
+            confirmButton.addEventListener('click', async () => {
+                try {
+                    // Get user data from localStorage
+                    const name = localStorage.getItem('userName');
+                    const className = localStorage.getItem('userClass');
+                    
+                    // Disable button and show loading state
+                    confirmButton.disabled = true;
+                    confirmButton.textContent = 'Odesílání...';
+                    
+                    // Prepare form data
+                    const formData = new URLSearchParams();
+                    formData.append('name', name);
+                    formData.append('class', className);
+                    formData.append('firstProgram', firstProgram);
+                    formData.append('secondProgram', secondProgram);
+                    
+                    // Send data to Google Sheets API using GET with parameters
+                    const url = `https://script.google.com/macros/s/AKfycbwflYk9twbOM6vNAGhMMkLWfC-SQuHzV1OTI5ljsLxCqmD61L5J7QoY0YOyQHJry376/exec?name=${encodeURIComponent(name)}&class=${encodeURIComponent(className)}&firstProgram=${encodeURIComponent(firstProgram)}&secondProgram=${encodeURIComponent(secondProgram)}`;
+                    
+                    const res = await fetch(url, {
+                        method: "GET",
+                        redirect: "follow"
+                    });
+                    
+                    const result = await res.json();
+                    
+                    if (result.status === "success") {
+                        // Success - update button
+                        confirmButton.textContent = 'Úspěšně odesláno!';
+                        confirmButton.style.backgroundColor = 'var(--green-color)';
+                        
+                        // Remove the container after 2 seconds
+                        setTimeout(() => {
+                            confirmContainer.remove();
+                        }, 2000);
+                    } else {
+                        throw new Error('Failed to save data');
+                    }
+                } catch (error) {
+                    console.error('Error submitting data:', error);
+                    confirmButton.textContent = 'Chyba! Zkuste to znovu.';
+                    confirmButton.style.backgroundColor = 'var(--red-color)';
+                    confirmButton.disabled = false;
+                    
+                    // Reset button after 3 seconds
+                    setTimeout(() => {
+                        confirmButton.innerHTML = `${firstProgram}, ${secondProgram} &#8211; Potvrdit?`;
+                        confirmButton.style.backgroundColor = 'var(--green-color)';
+                    }, 3000);
+                }
             });
             
             confirmContainer.appendChild(backButton);
