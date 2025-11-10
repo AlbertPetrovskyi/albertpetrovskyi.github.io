@@ -48,6 +48,8 @@ function updateCountdown() {
     headerReg.textContent = `Přihlášení začne za ${formattedDays}:${formattedHours}:${formattedMinutes}`;
 }
 
+// Track selected programs
+let selectedPrograms = [];
 
 function updateProgramButtons() {
     const now = new Date();
@@ -81,6 +83,53 @@ function updateProgramButtons() {
         }
     });
 }
+
+// Add click event listeners to program buttons
+document.querySelectorAll('.program__button').forEach((button, index) => {
+    button.addEventListener('click', () => {
+        const programIndex = index;
+        const isSelected = selectedPrograms.includes(programIndex);
+        
+        if (isSelected) {
+            // Deselect program
+            selectedPrograms = selectedPrograms.filter(i => i !== programIndex);
+            button.style.border = '2px solid var(--dark-color)';
+            button.style.color = 'var(--dark-color)';
+            button.style.backgroundColor = 'var(--light-color)';
+            
+            // Update SVG color
+            const svg = button.querySelector('svg');
+            if (svg) {
+                svg.querySelector('path').style.fill = 'var(--dark-color)';
+                // Update button text while keeping SVG
+                button.innerHTML = '';
+                button.appendChild(svg);
+                button.appendChild(document.createTextNode('Vybrat'));
+            }
+        } else {
+            // Select program if less than 2 are selected
+            if (selectedPrograms.length < 2) {
+                selectedPrograms.push(programIndex);
+                button.style.border = '2px solid var(--green-color)';
+                button.style.color = 'var(--green-color)';
+                button.style.backgroundColor = 'var(--light-color)';
+                
+                // Update SVG color
+                const svg = button.querySelector('svg');
+                if (svg) {
+                    svg.querySelector('path').style.fill = 'var(--green-color)';
+                    // Update button text while keeping SVG
+                    button.innerHTML = '';
+                    button.appendChild(svg);
+                    button.appendChild(document.createTextNode('Vybráno'));
+                }
+            }
+        }
+        
+        // Store selected programs in localStorage
+        localStorage.setItem('selectedPrograms', JSON.stringify(selectedPrograms));
+    });
+});
 
 const countdownInterval = setInterval(updateCountdown, 60000);
 updateCountdown();
@@ -135,6 +184,29 @@ document.querySelector('.action__reg').addEventListener('submit', (e) => {
 window.addEventListener('DOMContentLoaded', () => {
     const savedName = localStorage.getItem('userName');
     const savedClass = localStorage.getItem('userClass');
+    const savedPrograms = localStorage.getItem('selectedPrograms');
+    
+    if (savedPrograms) {
+        selectedPrograms = JSON.parse(savedPrograms);
+        
+        // Apply green styling to previously selected programs
+        document.querySelectorAll('.program__button').forEach((button, index) => {
+            if (selectedPrograms.includes(index)) {
+                button.style.border = '2px solid var(--green-color)';
+                button.style.color = 'var(--green-color)';
+                button.style.backgroundColor = 'var(--light-color)';
+                
+                const svg = button.querySelector('svg');
+                if (svg) {
+                    svg.querySelector('path').style.fill = 'var(--green-color)';
+                    // Update button text while keeping SVG
+                    button.innerHTML = '';
+                    button.appendChild(svg);
+                    button.appendChild(document.createTextNode('Vybráno'));
+                }
+            }
+        });
+    }
     
     if (savedName && savedClass) {
         const nameDiv = document.querySelector('.reg__name');

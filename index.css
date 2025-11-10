@@ -52,6 +52,7 @@ body {
 	align-items: center;
 	width: 100%;
 	z-index: 1000;
+	pointer-events: none;
 }
 
 .header__flag {
@@ -69,6 +70,7 @@ body {
 	font-size: 1rem;
 	text-align: center;
 	transition: all 0.2s ease-in-out;
+	pointer-events: auto;
 }
 
 .header__reg-opened {
@@ -79,6 +81,7 @@ body {
 	background-image: var(--gradient-color);
 	border-radius: 10px;
 	transition: all 0.2s ease-in-out;
+	pointer-events: auto;
 }
 
 .hero {
@@ -267,23 +270,6 @@ body {
 
 .program__button:disabled > svg path {
 	fill: var(--neutral-color);
-}
-
-.button__selected {
-	position: relative;
-	border: 2px solid var(--green-color);
-	color: var(--green-color);
-	background-color: var(--light-color);
-}
-
-.button__selected > svg {
-	width: 1.2rem;
-	margin-right: 0.75rem;
-	transition: all 0.2s ease-in-out;
-}
-
-.button__selected > svg path {
-	fill: var(--green-color);
 }
 
 .program__capacity {
@@ -732,10 +718,6 @@ body {
 		fill: var(--light-color)
 	}
 
-	.button__selected > svg:hover {
-		transform: scale(1.05);
-	}
-
 	.reg__button:hover {
 		transform: scale(1.02);
 	}
@@ -780,10 +762,6 @@ body {
 
 .program__button:enabled:active svg path {
 	fill: var(--light-color)
-}
-
-.button__selected > svg:active {
-	transform: scale(1.05);
 }
 
 .reg__button:active {
