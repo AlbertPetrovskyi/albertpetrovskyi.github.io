@@ -1,5 +1,6 @@
+const targetDate = new Date('2025-11-09T00:00:00+01:00');
+
 function updateCountdown() {
-    const targetDate = new Date('2025-11-09T00:00:00+01:00');
     const now = new Date();
     const difference = targetDate - now;
 
@@ -21,7 +22,7 @@ function updateCountdown() {
         checkboxInput.disabled = false;
         submitButton.disabled = false;
         
-        // Enable program buttons if registered
+        
         updateProgramButtons();
         
         clearInterval(countdownInterval);
@@ -33,7 +34,7 @@ function updateCountdown() {
     checkboxInput.disabled = true;
     submitButton.disabled = true;
     
-    // Disable program buttons when timer is running
+    
     updateProgramButtons();
 
     const days = Math.floor(difference / (1000 * 60 * 60 * 24));
@@ -47,9 +48,8 @@ function updateCountdown() {
     headerReg.textContent = `Přihlášení začne za ${formattedDays}:${formattedHours}:${formattedMinutes}`;
 }
 
-// Add this new function to handle program button states
+
 function updateProgramButtons() {
-    const targetDate = new Date('2025-11-09T00:00:00+01:00');
     const now = new Date();
     const timerActive = targetDate - now > 0;
     const isRegistered = localStorage.getItem('userName') && localStorage.getItem('userClass');
@@ -60,7 +60,7 @@ function updateProgramButtons() {
         const capacityDiv = button.closest('.program__buttons').querySelector('.program__capacity');
         const isFull = capacityDiv?.classList.contains('capacity__full');
         
-        // Disable if: timer is active OR user not registered OR program is full
+        
         if (timerActive || !isRegistered || isFull) {
             button.disabled = true;
         } else {
@@ -72,15 +72,18 @@ function updateProgramButtons() {
 const countdownInterval = setInterval(updateCountdown, 60000);
 updateCountdown();
 
-// Handle form submission
+
 document.querySelector('.action__reg').addEventListener('submit', (e) => {
     e.preventDefault();
     
     const nameInput = document.querySelector('.reg__name input');
     const classInput = document.querySelector('.reg__class input');
+    const nameDiv = document.querySelector('.reg__name');
     const classDiv = document.querySelector('.reg__class');
     const acceptLabel = document.querySelector('.reg__accept');
     const submitButton = document.querySelector('.reg__button');
+    const gradientText = document.querySelector('.action__text-gradient');
+    const headerLink = document.querySelector('.header__reg-opened');
     
     // Get values
     const name = nameInput.value;
@@ -90,9 +93,13 @@ document.querySelector('.action__reg').addEventListener('submit', (e) => {
     localStorage.setItem('userName', name);
     localStorage.setItem('userClass', className);
     
-    // Update name input with combined format
-    nameInput.value = `${name} ${className}`;
-    nameInput.disabled = true;
+    // Update header link with user info
+    if (headerLink) {
+        headerLink.textContent = `${name} ${className}`;
+    }
+    
+    // Remove name input
+    nameDiv.remove();
     
     // Remove class input
     classDiv.remove();
@@ -104,24 +111,33 @@ document.querySelector('.action__reg').addEventListener('submit', (e) => {
     submitButton.textContent = 'Děkujeme za přihlášení!';
     submitButton.disabled = true;
     
+    // Update gradient text
+    gradientText.textContent = 'Vybírej už teď!';
+    
     // Enable program buttons after registration
     updateProgramButtons();
 });
 
-// Check if already registered on page load
+
 window.addEventListener('DOMContentLoaded', () => {
     const savedName = localStorage.getItem('userName');
     const savedClass = localStorage.getItem('userClass');
     
     if (savedName && savedClass) {
-        const nameInput = document.querySelector('.reg__name input');
+        const nameDiv = document.querySelector('.reg__name');
         const classDiv = document.querySelector('.reg__class');
         const acceptLabel = document.querySelector('.reg__accept');
         const submitButton = document.querySelector('.reg__button');
+        const gradientText = document.querySelector('.action__text-gradient');
+        const headerLink = document.querySelector('.header__reg-opened');
         
-        // Update name input with combined format
-        nameInput.value = `${savedName} ${savedClass}`;
-        nameInput.disabled = true;
+        // Update header link with user info
+        if (headerLink) {
+            headerLink.textContent = `${savedName} ${savedClass}`;
+        }
+        
+        // Remove name input
+        if (nameDiv) nameDiv.remove();
         
         // Remove class input
         if (classDiv) classDiv.remove();
@@ -132,6 +148,9 @@ window.addEventListener('DOMContentLoaded', () => {
         // Update button
         submitButton.textContent = 'Děkujeme za přihlášení!';
         submitButton.disabled = true;
+        
+        // Update gradient text
+        if (gradientText) gradientText.textContent = 'Vybírej už teď!';
     }
     
     // Update program buttons state on page load
