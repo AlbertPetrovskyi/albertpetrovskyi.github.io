@@ -494,55 +494,97 @@ body {
 	transition: transform 0.3s ease-in-out, opacity 0.3s ease-in-out;
 }
 
+.confirmation__container {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+    padding: 1.5rem;
+    background-color: var(--light-color);
+    box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.1);
+    z-index: 999;
+}
+
+.confirmation__back {
+    font-family: 'DM Sans', sans-serif;
+    cursor: pointer;
+    border: none;
+    outline: none;
+    background: none;
+    font-size: 1rem;
+    color: var(--neutral-color);
+    text-decoration: none;
+    transition: all 0.2s ease-in-out;
+}
+
+.confirmation__button {
+    font-family: 'DM Sans', sans-serif;
+    cursor: pointer;
+    border: none;
+    outline: none;
+    padding: 1rem 1.5rem;
+    font-size: 1.2rem;
+    color: var(--light-color);
+    background-color: var(--green-color);
+    border-radius: 10px;
+    transition: all 0.2s ease-in-out;
+    width: 100%;
+    max-width: 600px;
+}
+
 @media (min-width: 768px) {
-	.header__flag {
-		width: 10vw;
-	}
+    .header__flag {
+        width: 10vw;
+    }
 
-	.header__reg {
-		font-size: 1.2rem;
-	}
+    .header__reg {
+        font-size: 1.2rem;
+    }
 
-	.header__reg-opened {
-		font-size: 1.2rem;
-		padding: 1rem 1.5rem;
-	}
+    .header__reg-opened {
+        font-size: 1.2rem;
+        padding: 1rem 1.5rem;
+    }
 
-	.hero {
-		margin-top: 15vh;
-	}
+    .hero {
+        margin-top: 15vh;
+    }
 
-	.hero__quote {
-		font-size: 5rem;
-	}
+    .hero__quote {
+        font-size: 5rem;
+    }
 
-	.steps__container-title {
-		font-size: 5rem;
-	}
+    .steps__container-title {
+        font-size: 5rem;
+    }
 
-	.steps__container-text {
-		font-size: 1.5rem;
-	}
+    .steps__container-text {
+        font-size: 1.5rem;
+    }
 
-	.schedule {
-		border-radius: 25px;
-	}
+    .schedule {
+        border-radius: 25px;
+    }
 
-	.schedule__title {
-		font-size: 4rem;
-	}
+    .schedule__title {
+        font-size: 4rem;
+    }
 
-	.plan__block > span {
-		font-size: 1.5rem;
-		margin: 1rem 0;
-	}
+    .plan__block > span {
+        font-size: 1.5rem;
+        margin: 1rem 0;
+    }
 
-	.programs__title {
-		font-size: 4rem;
-		margin-bottom: 3vh;
-	}
+    .programs__title {
+        font-size: 4rem;
+        margin-bottom: 3vh;
+    }
 
-	.program__person {
+    .program__person {
 	font-size: 1.5rem;
 	}
 

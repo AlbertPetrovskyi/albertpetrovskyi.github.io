@@ -1,4 +1,4 @@
-const targetDate = new Date('2025-11-09T00:00:00+01:00');
+const targetDate = new Date('2025-11-11T00:00:00+01:00');
 
 function updateCountdown() {
     const now = new Date();
@@ -128,8 +128,62 @@ document.querySelectorAll('.program__button').forEach((button, index) => {
         
         // Store selected programs in localStorage
         localStorage.setItem('selectedPrograms', JSON.stringify(selectedPrograms));
+        
+        // Update confirmation button
+        updateConfirmationButton();
     });
 });
+
+// Function to update or remove the confirmation button
+function updateConfirmationButton() {
+    let confirmContainer = document.querySelector('.confirmation__container');
+    
+    if (selectedPrograms.length === 2) {
+        // Get program titles
+        const programDivs = document.querySelectorAll('.programs__program');
+        const firstProgram = programDivs[selectedPrograms[0]].querySelector('.program__title').textContent;
+        const secondProgram = programDivs[selectedPrograms[1]].querySelector('.program__title').textContent;
+        
+        if (!confirmContainer) {
+            // Create confirmation container
+            confirmContainer = document.createElement('div');
+            confirmContainer.className = 'confirmation__container';
+            
+            // Create back button
+            const backButton = document.createElement('button');
+            backButton.className = 'confirmation__back';
+            backButton.textContent = 'Zpět';
+            backButton.type = 'button';
+            backButton.addEventListener('click', () => {
+                confirmContainer.remove();
+            });
+            
+            // Create confirm button
+            const confirmButton = document.createElement('button');
+            confirmButton.className = 'confirmation__button';
+            confirmButton.type = 'button';
+            confirmButton.innerHTML = `${firstProgram}, ${secondProgram} &#8211; Potvrdit?`;
+            confirmButton.addEventListener('click', () => {
+                // Handle confirmation
+                alert('Programy potvrzeny!');
+                // You can add more logic here
+            });
+            
+            confirmContainer.appendChild(backButton);
+            confirmContainer.appendChild(confirmButton);
+            document.body.appendChild(confirmContainer);
+        } else {
+            // Update existing button text
+            const confirmButton = confirmContainer.querySelector('.confirmation__button');
+            confirmButton.innerHTML = `${firstProgram}, ${secondProgram} &#8211; Potvrdit?`;
+        }
+    } else {
+        // Remove confirmation container if less than 2 programs selected
+        if (confirmContainer) {
+            confirmContainer.remove();
+        }
+    }
+}
 
 const countdownInterval = setInterval(updateCountdown, 60000);
 updateCountdown();
@@ -206,6 +260,9 @@ window.addEventListener('DOMContentLoaded', () => {
                 }
             }
         });
+        
+        // Show confirmation button if 2 programs are selected
+        updateConfirmationButton();
     }
     
     if (savedName && savedClass) {
