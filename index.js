@@ -58,9 +58,22 @@ function updateProgramButtons() {
     
     programButtons.forEach(button => {
         const capacityDiv = button.closest('.program__buttons').querySelector('.program__capacity');
-        const isFull = capacityDiv?.classList.contains('capacity__full');
+        const capacityText = capacityDiv?.textContent.trim();
         
+        // Parse capacity (e.g., "30 / 30" or "6 / 30")
+        const [current, total] = capacityText.split('/').map(num => parseInt(num.trim()));
+        const isFull = current >= total;
         
+        // Update capacity div styling
+        if (isFull) {
+            capacityDiv.style.border = '2px solid var(--red-color)';
+            capacityDiv.classList.add('capacity__full');
+        } else {
+            capacityDiv.style.border = '2px solid var(--blue-color)';
+            capacityDiv.classList.remove('capacity__full');
+        }
+        
+        // Disable if: timer is active OR user not registered OR program is full
         if (timerActive || !isRegistered || isFull) {
             button.disabled = true;
         } else {

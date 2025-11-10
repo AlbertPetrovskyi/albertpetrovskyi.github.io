@@ -286,34 +286,12 @@ body {
 	fill: var(--green-color);
 }
 
-.button__unselect {
-	background-color: var(--light-color);
-	position: absolute;
-	border-radius: 100%;
-	width: 1.5rem !important;
-	cursor: pointer;
-	top: -0.75rem;
-	right: -2rem;
-}
-
-.button__unselect path {
-	fill: var(--neutral-color) !important;
-}
-
 .program__capacity {
 	padding: 0.75rem 1.25rem;
 	border-radius: 10px;
 	font-size: 1.2rem;
 	color: var(--dark-color);
 	text-align: center;
-}
-
-.capacity__available {
-	border: 2px solid var(--blue-color);
-}
-
-.capacity__full {
-	border: 2px solid var(--red-color);
 }
 
 .action {
@@ -605,10 +583,6 @@ body {
 		padding: 1rem 1.5rem;
 		border-radius: 15px;
 		font-size: 1.5rem;
-	}
-
-	.button__unselect {
-		width: 2.25rem !important;
 	}
 
 	.action__text-dark {
