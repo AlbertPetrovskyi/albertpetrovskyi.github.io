@@ -165,6 +165,15 @@ function updateConfirmationButton() {
             confirmButton.innerHTML = `${firstProgram}, ${secondProgram} &#8211; Potvrdit?`;
             confirmButton.addEventListener('click', async () => {
                 try {
+                    // Check if already submitted
+                    const hasSubmitted = localStorage.getItem('hasSubmittedPrograms');
+                    if (hasSubmitted === 'true') {
+                        confirmButton.textContent = 'Již odesláno!';
+                        confirmButton.style.backgroundColor = 'var(--neutral-color)';
+                        confirmButton.disabled = true;
+                        return;
+                    }
+                    
                     // Get user data from localStorage
                     const name = localStorage.getItem('userName');
                     const className = localStorage.getItem('userClass');
@@ -191,9 +200,17 @@ function updateConfirmationButton() {
                     const result = await res.json();
                     
                     if (result.status === "success") {
+                        // Mark as submitted in localStorage
+                        localStorage.setItem('hasSubmittedPrograms', 'true');
+                        
                         // Success - update button
                         confirmButton.textContent = 'Úspěšně odesláno!';
                         confirmButton.style.backgroundColor = 'var(--green-color)';
+                        
+                        // Disable all program buttons after successful submission
+                        document.querySelectorAll('.program__button').forEach(btn => {
+                            btn.disabled = true;
+                        });
                         
                         // Remove the container after 2 seconds
                         setTimeout(() => {
@@ -286,6 +303,7 @@ window.addEventListener('DOMContentLoaded', () => {
     const savedName = localStorage.getItem('userName');
     const savedClass = localStorage.getItem('userClass');
     const savedPrograms = localStorage.getItem('selectedPrograms');
+    const hasSubmitted = localStorage.getItem('hasSubmittedPrograms');
     
     if (savedPrograms) {
         selectedPrograms = JSON.parse(savedPrograms);
@@ -306,10 +324,17 @@ window.addEventListener('DOMContentLoaded', () => {
                     button.appendChild(document.createTextNode('Vybráno'));
                 }
             }
+            
+            // Disable button if already submitted
+            if (hasSubmitted === 'true') {
+                button.disabled = true;
+            }
         });
         
-        // Show confirmation button if 2 programs are selected
-        updateConfirmationButton();
+        // Show confirmation button if 2 programs are selected and not yet submitted
+        if (hasSubmitted !== 'true') {
+            updateConfirmationButton();
+        }
     }
     
     if (savedName && savedClass) {
@@ -339,7 +364,13 @@ window.addEventListener('DOMContentLoaded', () => {
         submitButton.disabled = true;
         
         // Update gradient text
-        if (gradientText) gradientText.textContent = 'Vybírej už teď!';
+        if (gradientText) {
+            if (hasSubmitted === 'true') {
+                gradientText.textContent = 'Programy již byly odeslány!';
+            } else {
+                gradientText.textContent = 'Vybírej už teď!';
+            }
+        }
     }
     
     // Update program buttons state on page load
