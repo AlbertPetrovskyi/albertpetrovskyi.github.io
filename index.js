@@ -1,5 +1,5 @@
 function updateCountdown() {
-    const targetDate = new Date('2025-11-09T00:00:00+01:00');
+    const targetDate = new Date('2025-11-13T00:00:00+01:00');
     const now = new Date();
     const difference = targetDate - now;
 
@@ -67,7 +67,7 @@ document.querySelector('.action__reg').addEventListener('submit', (e) => {
 
 // document.getElementById("regForm").addEventListener("submit", async e => {
 //     e.preventDefault();
-//     const res = await fetch("https://script.google.com/macros/s/AKfycbyqtfJJaQlCVGyoEoOXMRHu1T7D4yfzM7clYPUWKi5G_iLTUKmq77tXUW4AM3U0fspe/exec", {
+//     const res = await fetch(process.env.GOOGLE_SHEET_API, {
 //         method: "POST",
 //         body: JSON.stringify({
 //         name: document.getElementById("name").value,
