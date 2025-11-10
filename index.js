@@ -1,5 +1,5 @@
 function updateCountdown() {
-	const targetDate = new Date('2025-11-15T00:00:00+01:00');
+	const targetDate = new Date('2025-11-09T00:00:00+01:00');
 	const now = new Date();
 	const difference = targetDate - now;
 
@@ -44,16 +44,62 @@ function updateCountdown() {
 const countdownInterval = setInterval(updateCountdown, 60000);
 updateCountdown();
 
-// document.getElementById("regForm").addEventListener("submit", async e => {
-//     e.preventDefault();
-//     const res = await fetch(process.env.GOOGLE_SHEET_API, {
-//         method: "POST",
-//         body: JSON.stringify({
-//         name: document.getElementById("name").value,
-//         class: document.getElementById("class").value,
-//         firstProgram: document.getElementById("firstProgram").value,
-//         secondProgram: document.getElementById("secondProgram").value
-//         })
-//     });
-//     document.getElementById('regForm').reset();
-// });
+// Handle form submission
+document.querySelector('.action__reg').addEventListener('submit', (e) => {
+    e.preventDefault();
+    
+    const nameInput = document.querySelector('.reg__name input');
+    const classInput = document.querySelector('.reg__class input');
+    const classDiv = document.querySelector('.reg__class');
+    const acceptLabel = document.querySelector('.reg__accept');
+    const submitButton = document.querySelector('.reg__button');
+    
+    // Get values
+    const name = nameInput.value;
+    const className = classInput.value;
+    
+    // Store in localStorage
+    localStorage.setItem('userName', name);
+    localStorage.setItem('userClass', className);
+    
+    // Update name input with combined format
+    nameInput.value = `${name} ${className}`;
+    nameInput.disabled = true;
+    
+    // Remove class input
+    classDiv.remove();
+    
+    // Remove accept checkbox
+    acceptLabel.remove();
+    
+    // Update button
+    submitButton.textContent = 'Děkujeme za přihlášení!';
+    submitButton.disabled = true;
+});
+
+// Check if already registered on page load
+window.addEventListener('DOMContentLoaded', () => {
+    const savedName = localStorage.getItem('userName');
+    const savedClass = localStorage.getItem('userClass');
+    
+    if (savedName && savedClass) {
+        const nameInput = document.querySelector('.reg__name input');
+        const classDiv = document.querySelector('.reg__class');
+        const acceptLabel = document.querySelector('.reg__accept');
+        const submitButton = document.querySelector('.reg__button');
+        
+        // Update name input with combined format
+        nameInput.value = `${savedName} ${savedClass}`;
+        nameInput.disabled = true;
+        
+        // Remove class input
+        if (classDiv) classDiv.remove();
+        
+        // Remove accept checkbox
+        if (acceptLabel) acceptLabel.remove();
+        
+        // Update button
+        submitButton.textContent = 'Děkujeme za přihlášení!';
+        submitButton.disabled = true;
+    }
+});
