@@ -1,4 +1,4 @@
-const targetDate = new Date('2025-11-15T00:00:00+01:00');
+const targetDate = new Date('2025-11-21T00:00:00+01:00');
 const GOOGLE_SHEET_API = 'https://script.google.com/macros/s/AKfycbxUlTEanoHNBFz9i-GLNh7RFnSLgVqfQnS-ZLReROUeCgtGYdQZAi4bEpE1ffpcsic/exec';
 
 function updateCountdown() {
@@ -358,7 +358,7 @@ window.addEventListener('DOMContentLoaded', () => {
 		
 		if (gradientText) {
 				if (hasSubmitted === 'true') {
-					gradientText.textContent = 'Programy již byly odeslány!';
+					gradientText.textContent = 'Řekni ostatním!';
 				} else {
 					gradientText.textContent = 'Vybírej už teď!';
 				}
