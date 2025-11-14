@@ -279,7 +279,7 @@ async function fetchCapacityFromSheet() {
 					const capacityDiv = programDiv.querySelector('.program__capacity');
 					
 					let currentCapacity = 0;
-					const maxCapacity = 30;
+					const maxCapacity = 70;
 					
 					if (programTitle === 'Politologie') {
 						currentCapacity = capacityData.politologie;
@@ -305,33 +305,41 @@ window.addEventListener('DOMContentLoaded', () => {
 	const savedPrograms = localStorage.getItem('selectedPrograms');
 	const hasSubmitted = localStorage.getItem('hasSubmittedPrograms');
 	
+	document.querySelectorAll('.program__description').forEach(description => {
+		description.style.display = 'none';
+	});
+	
+	document.querySelectorAll('.program__title svg').forEach(arrow => {
+		arrow.style.transform = 'rotate(180deg)';
+	});
+	
 	fetchCapacityFromSheet();
 	
 	if (savedPrograms) {
 		selectedPrograms = JSON.parse(savedPrograms);
 		
 		document.querySelectorAll('.program__button').forEach((button, index) => {
-				if (selectedPrograms.includes(index)) {
-					button.style.border = '2px solid var(--green-color)';
-					button.style.color = 'var(--green-color)';
-					button.style.backgroundColor = 'var(--light-color)';
-					
-					const svg = button.querySelector('svg');
-					if (svg) {
-						svg.querySelector('path').style.fill = 'var(--green-color)';
-						button.innerHTML = '';
-						button.appendChild(svg);
-						button.appendChild(document.createTextNode('Vybráno'));
+					if (selectedPrograms.includes(index)) {
+						button.style.border = '2px solid var(--green-color)';
+						button.style.color = 'var(--green-color)';
+						button.style.backgroundColor = 'var(--light-color)';
+						
+						const svg = button.querySelector('svg');
+						if (svg) {
+								svg.querySelector('path').style.fill = 'var(--green-color)';
+								button.innerHTML = '';
+								button.appendChild(svg);
+								button.appendChild(document.createTextNode('Vybráno'));
+						}
 					}
-				}
-				
-				if (hasSubmitted === 'true') {
-					button.disabled = true;
-				}
+					
+					if (hasSubmitted === 'true') {
+						button.disabled = true;
+					}
 		});
 		
 		if (hasSubmitted !== 'true') {
-				updateConfirmationButton();
+					updateConfirmationButton();
 		}
 	}
 	
@@ -344,7 +352,7 @@ window.addEventListener('DOMContentLoaded', () => {
 		const headerLink = document.querySelector('.header__reg-opened');
 		
 		if (headerLink) {
-				headerLink.textContent = `${savedName} ${savedClass}`;
+					headerLink.textContent = `${savedName} ${savedClass}`;
 		}
 		
 		if (nameDiv) nameDiv.remove();
@@ -357,11 +365,11 @@ window.addEventListener('DOMContentLoaded', () => {
 		submitButton.disabled = true;
 		
 		if (gradientText) {
-				if (hasSubmitted === 'true') {
-					gradientText.textContent = 'Řekni ostatním!';
-				} else {
-					gradientText.textContent = 'Vybírej už teď!';
-				}
+					if (hasSubmitted === 'true') {
+						gradientText.textContent = 'Řekni ostatním!';
+					} else {
+						gradientText.textContent = 'Vybírej už teď!';
+					}
 		}
 	}
 	
@@ -369,3 +377,19 @@ window.addEventListener('DOMContentLoaded', () => {
 });
 
 setInterval(fetchCapacityFromSheet, 10000);
+
+document.querySelectorAll('.program__title').forEach(title => {
+	title.addEventListener('click', () => {
+		const programDiv = title.closest('.programs__program');
+		const description = programDiv.querySelector('.program__description');
+		const arrow = title.querySelector('svg');
+		
+		if (description.style.display === 'none') {
+				description.style.display = 'block';
+				arrow.style.transform = 'rotate(0deg)';
+		} else {
+				description.style.display = 'none';
+				arrow.style.transform = 'rotate(180deg)';
+		}
+	});
+});

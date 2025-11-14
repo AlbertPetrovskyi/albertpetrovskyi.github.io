@@ -224,9 +224,28 @@ body {
 }
 
 .program__title {
-	font-size: 2rem;
+	cursor: pointer;
+	display: flex;
+	align-items: center;
 	margin-top: -0.25rem;
 	margin-bottom: 0.25rem;
+	-webkit-user-select: none;
+	-moz-user-select: none;
+	-ms-user-select: none;
+	user-select: none;
+}
+
+.program__title > span {
+	font-size: 2rem;
+	margin-right: 0.5rem;
+}
+
+.program__title > svg {
+	cursor: pointer;
+	position: relative;
+	top: 2px;
+	width: 1.3rem;
+	transition: transform 0.15s ease-in-out;
 }
 
 .program__description {
@@ -603,8 +622,14 @@ body {
 		margin: 0 0.5rem 0 1rem;
 	}
 
-	.program__title {
+	.program__title > span {
 		font-size: 4rem;
+		margin-right: 1rem;
+	}
+
+	.program__title > svg {
+		width: 2rem;
+		top: 4px;
 	}
 
 	.program__description {
