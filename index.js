@@ -1,4 +1,4 @@
-const targetDate = new Date('2025-11-21T00:00:00+01:00');
+const targetDate = new Date('2025-11-11T00:00:00+01:00');
 const GOOGLE_SHEET_API = 'https://script.google.com/macros/s/AKfycbxUlTEanoHNBFz9i-GLNh7RFnSLgVqfQnS-ZLReROUeCgtGYdQZAi4bEpE1ffpcsic/exec';
 
 function updateCountdown() {
@@ -127,8 +127,8 @@ function updateConfirmationButton() {
 	
 	if (selectedPrograms.length === 2) {
 		const programDivs = document.querySelectorAll('.programs__program');
-		const firstProgram = programDivs[selectedPrograms[0]].querySelector('.program__title').textContent;
-		const secondProgram = programDivs[selectedPrograms[1]].querySelector('.program__title').textContent;
+		const firstProgram = programDivs[selectedPrograms[0]].querySelector('.program__title > span').textContent;
+		const secondProgram = programDivs[selectedPrograms[1]].querySelector('.program__title > span').textContent;
 		
 		if (!confirmContainer) {
 				confirmContainer = document.createElement('div');
@@ -147,64 +147,69 @@ function updateConfirmationButton() {
 				confirmButton.type = 'button';
 				confirmButton.innerHTML = `${firstProgram}, ${secondProgram} &#8211; Potvrdit?`;
 				confirmButton.addEventListener('click', async () => {
-					try {
-						const hasSubmitted = localStorage.getItem('hasSubmittedPrograms');
-						if (hasSubmitted === 'true') {
-								confirmButton.textContent = 'Již odesláno!';
-								confirmButton.style.backgroundColor = 'var(--neutral-color)';
-								confirmButton.disabled = true;
-								return;
-						}
-						
-						const name = localStorage.getItem('userName');
-						const className = localStorage.getItem('userClass');
-						
-						confirmButton.disabled = true;
-						confirmButton.textContent = 'Odesílání...';
-						
-						const formData = new URLSearchParams();
-						formData.append('name', name);
-						formData.append('class', className);
-						formData.append('firstProgram', firstProgram);
-						formData.append('secondProgram', secondProgram);
-						
-						const url = `${GOOGLE_SHEET_API}?name=${encodeURIComponent(name)}&class=${encodeURIComponent(className)}&firstProgram=${encodeURIComponent(firstProgram)}&secondProgram=${encodeURIComponent(secondProgram)}`;
-						
-						const res = await fetch(url, {
-								method: "GET",
-								redirect: "follow"
-						});
-						
-						const result = await res.json();
-						
-						if (result.status === "success") {
-								localStorage.setItem('hasSubmittedPrograms', 'true');
-								
-								confirmButton.textContent = 'Úspěšně odesláno!';
-								confirmButton.style.backgroundColor = 'var(--green-color)';
-								
-								document.querySelectorAll('.program__button').forEach(btn => {
-									btn.disabled = true;
-								});
-								
-								setTimeout(() => {
-									confirmContainer.remove();
-								}, 2000);
-						} else {
-								throw new Error('Failed to save data');
-						}
-					} catch (error) {
-						console.error('Error submitting data:', error);
-						confirmButton.textContent = 'Chyba! Zkuste to znovu.';
-						confirmButton.style.backgroundColor = 'var(--red-color)';
-						confirmButton.disabled = false;
-						
-						setTimeout(() => {
-								confirmButton.innerHTML = `${firstProgram}, ${secondProgram} &#8211; Potvrdit?`;
-								confirmButton.style.backgroundColor = 'var(--green-color)';
-						}, 3000);
-					}
-				});
+    try {
+        const hasSubmitted = localStorage.getItem('hasSubmittedPrograms');
+        if (hasSubmitted === 'true') {
+            confirmButton.textContent = 'Již odesláno!';
+            confirmButton.style.backgroundColor = 'var(--neutral-color)';
+            confirmButton.disabled = true;
+            return;
+        }
+        
+        const name = localStorage.getItem('userName');
+        const className = localStorage.getItem('userClass');
+        
+        confirmButton.disabled = true;
+        confirmButton.textContent = 'Odesílání...';
+        
+        const formData = new URLSearchParams();
+        formData.append('name', name);
+        formData.append('class', className);
+        formData.append('firstProgram', firstProgram);
+        formData.append('secondProgram', secondProgram);
+        
+        const url = `${GOOGLE_SHEET_API}?name=${encodeURIComponent(name)}&class=${encodeURIComponent(className)}&firstProgram=${encodeURIComponent(firstProgram)}&secondProgram=${encodeURIComponent(secondProgram)}`;
+        
+        const res = await fetch(url, {
+            method: "GET",
+            redirect: "follow"
+        });
+        
+        const result = await res.json();
+        
+        if (result.status === "success") {
+            localStorage.setItem('hasSubmittedPrograms', 'true');
+            localStorage.setItem('firstProgramSubmitted', firstProgram);
+            localStorage.setItem('secondProgramSubmitted', secondProgram);
+            
+            confirmButton.textContent = 'Úspěšně odesláno!';
+            confirmButton.style.backgroundColor = 'var(--green-color)';
+            
+            document.querySelectorAll('.program__button').forEach(btn => {
+                btn.disabled = true;
+            });
+            
+            // Display selected programs under name input
+            displaySelectedPrograms(firstProgram, secondProgram);
+            
+            setTimeout(() => {
+                confirmContainer.remove();
+            }, 2000);
+        } else {
+            throw new Error('Failed to save data');
+        }
+    } catch (error) {
+        console.error('Error submitting data:', error);
+        confirmButton.textContent = 'Chyba! Zkuste to znovu.';
+        confirmButton.style.backgroundColor = 'var(--red-color)';
+        confirmButton.disabled = false;
+        
+        setTimeout(() => {
+            confirmButton.innerHTML = `${firstProgram}, ${secondProgram} &#8211; Potvrdit?`;
+            confirmButton.style.backgroundColor = 'var(--green-color)';
+        }, 3000);
+    }
+});
 				
 				confirmContainer.appendChild(backButton);
 				confirmContainer.appendChild(confirmButton);
@@ -220,6 +225,24 @@ function updateConfirmationButton() {
 	}
 }
 
+// Add new function to display selected programs
+function displaySelectedPrograms(firstProgram, secondProgram) {
+    // Remove existing programs display if any
+    const existingDisplay = document.querySelector('.reg__programs');
+    if (existingDisplay) {
+        existingDisplay.remove();
+    }
+    
+    // Create new programs display
+    const programsDisplay = document.createElement('div');
+    programsDisplay.className = 'reg__programs';
+    programsDisplay.innerHTML = `První program &#8211; ${firstProgram}<br>Druhý program &#8211; ${secondProgram}`;
+    
+    // Insert after reg__name
+    const regName = document.querySelector('.reg__name');
+    regName.parentNode.insertBefore(programsDisplay, regName.nextSibling);
+}
+
 const countdownInterval = setInterval(updateCountdown, 60000);
 updateCountdown();
 
@@ -229,7 +252,6 @@ document.querySelector('.action__reg').addEventListener('submit', (e) => {
 	
 	const nameInput = document.querySelector('.reg__name input');
 	const classInput = document.querySelector('.reg__class input');
-	const nameDiv = document.querySelector('.reg__name');
 	const classDiv = document.querySelector('.reg__class');
 	const acceptLabel = document.querySelector('.reg__accept');
 	const submitButton = document.querySelector('.reg__button');
@@ -246,7 +268,8 @@ document.querySelector('.action__reg').addEventListener('submit', (e) => {
 		headerLink.textContent = `${name} ${className}`;
 	}
 	
-	nameDiv.remove();
+	nameInput.value = `${name} ${className}`;
+	nameInput.disabled = true;
 	
 	classDiv.remove();
 	
@@ -275,7 +298,7 @@ async function fetchCapacityFromSheet() {
 				const programDivs = document.querySelectorAll('.programs__program');
 				
 				programDivs.forEach((programDiv, index) => {
-					const programTitle = programDiv.querySelector('.program__title').textContent;
+					const programTitle = programDiv.querySelector('.program__title > span').textContent;
 					const capacityDiv = programDiv.querySelector('.program__capacity');
 					
 					let currentCapacity = 0;
@@ -300,80 +323,90 @@ async function fetchCapacityFromSheet() {
 }
 
 window.addEventListener('DOMContentLoaded', () => {
-	const savedName = localStorage.getItem('userName');
-	const savedClass = localStorage.getItem('userClass');
-	const savedPrograms = localStorage.getItem('selectedPrograms');
-	const hasSubmitted = localStorage.getItem('hasSubmittedPrograms');
-	
-	document.querySelectorAll('.program__description').forEach(description => {
-		description.style.display = 'none';
-	});
-	
-	document.querySelectorAll('.program__title svg').forEach(arrow => {
-		arrow.style.transform = 'rotate(180deg)';
-	});
-	
-	fetchCapacityFromSheet();
-	
-	if (savedPrograms) {
-		selectedPrograms = JSON.parse(savedPrograms);
-		
-		document.querySelectorAll('.program__button').forEach((button, index) => {
-					if (selectedPrograms.includes(index)) {
-						button.style.border = '2px solid var(--green-color)';
-						button.style.color = 'var(--green-color)';
-						button.style.backgroundColor = 'var(--light-color)';
-						
-						const svg = button.querySelector('svg');
-						if (svg) {
-								svg.querySelector('path').style.fill = 'var(--green-color)';
-								button.innerHTML = '';
-								button.appendChild(svg);
-								button.appendChild(document.createTextNode('Vybráno'));
-						}
-					}
-					
-					if (hasSubmitted === 'true') {
-						button.disabled = true;
-					}
-		});
-		
-		if (hasSubmitted !== 'true') {
-					updateConfirmationButton();
-		}
-	}
-	
-	if (savedName && savedClass) {
-		const nameDiv = document.querySelector('.reg__name');
-		const classDiv = document.querySelector('.reg__class');
-		const acceptLabel = document.querySelector('.reg__accept');
-		const submitButton = document.querySelector('.reg__button');
-		const gradientText = document.querySelector('.action__text-gradient');
-		const headerLink = document.querySelector('.header__reg-opened');
-		
-		if (headerLink) {
-					headerLink.textContent = `${savedName} ${savedClass}`;
-		}
-		
-		if (nameDiv) nameDiv.remove();
-		
-		if (classDiv) classDiv.remove();
-		
-		if (acceptLabel) acceptLabel.remove();
-		
-		submitButton.textContent = 'Děkujeme za přihlášení!';
-		submitButton.disabled = true;
-		
-		if (gradientText) {
-					if (hasSubmitted === 'true') {
-						gradientText.textContent = 'Řekni ostatním!';
-					} else {
-						gradientText.textContent = 'Vybírej už teď!';
-					}
-		}
-	}
-	
-	updateProgramButtons();
+    const savedName = localStorage.getItem('userName');
+    const savedClass = localStorage.getItem('userClass');
+    const savedPrograms = localStorage.getItem('selectedPrograms');
+    const hasSubmitted = localStorage.getItem('hasSubmittedPrograms');
+    
+    document.querySelectorAll('.program__description').forEach(description => {
+        description.style.display = 'none';
+    });
+    
+    document.querySelectorAll('.program__title svg').forEach(arrow => {
+        arrow.style.transform = 'rotate(180deg)';
+    });
+    
+    fetchCapacityFromSheet();
+    
+    if (savedPrograms) {
+        selectedPrograms = JSON.parse(savedPrograms);
+        
+        document.querySelectorAll('.program__button').forEach((button, index) => {
+            if (selectedPrograms.includes(index)) {
+                button.style.border = '2px solid var(--green-color)';
+                button.style.color = 'var(--green-color)';
+                button.style.backgroundColor = 'var(--light-color)';
+                
+                const svg = button.querySelector('svg');
+                if (svg) {
+                    svg.querySelector('path').style.fill = 'var(--green-color)';
+                    button.innerHTML = '';
+                    button.appendChild(svg);
+                    button.appendChild(document.createTextNode('Vybráno'));
+                }
+            }
+            
+            if (hasSubmitted === 'true') {
+                button.disabled = true;
+            }
+        });
+        
+        if (hasSubmitted !== 'true') {
+            updateConfirmationButton();
+        }
+    }
+    
+    if (savedName && savedClass) {
+        const nameInput = document.querySelector('.reg__name input');
+        const classDiv = document.querySelector('.reg__class');
+        const acceptLabel = document.querySelector('.reg__accept');
+        const submitButton = document.querySelector('.reg__button');
+        const gradientText = document.querySelector('.action__text-gradient');
+        const headerLink = document.querySelector('.header__reg-opened');
+        
+        if (headerLink) {
+            headerLink.textContent = `${savedName} ${savedClass}`;
+        }
+        
+        nameInput.value = `${savedName} ${savedClass}`;
+        nameInput.disabled = true;
+        
+        if (classDiv) classDiv.remove();
+        
+        if (acceptLabel) acceptLabel.remove();
+        
+        submitButton.textContent = 'Děkujeme za přihlášení!';
+        submitButton.disabled = true;
+        
+        if (gradientText) {
+            if (hasSubmitted === 'true') {
+                gradientText.textContent = 'Řekni ostatním!';
+            } else {
+                gradientText.textContent = 'Vybírej už teď!';
+            }
+        }
+        
+        // Display selected programs if already submitted
+        if (hasSubmitted === 'true') {
+            const firstProgram = localStorage.getItem('firstProgramSubmitted');
+            const secondProgram = localStorage.getItem('secondProgramSubmitted');
+            if (firstProgram && secondProgram) {
+                displaySelectedPrograms(firstProgram, secondProgram);
+            }
+        }
+    }
+    
+    updateProgramButtons();
 });
 
 setInterval(fetchCapacityFromSheet, 10000);

@@ -244,6 +244,7 @@ body {
 	cursor: pointer;
 	position: relative;
 	top: 2px;
+	min-width: 1.3rem;
 	width: 1.3rem;
 	transition: transform 0.15s ease-in-out;
 }
@@ -413,6 +414,17 @@ body {
 .reg__class input::placeholder {
 	font-size: 1.2rem;
 	color: var(--neutral-color);
+}
+
+.reg__programs {
+	font-size: 1.2rem;
+	color: var(--dark-color);
+	text-align: center;
+	padding: 1rem;
+	border: 2px solid var(--green-color);
+	border-radius: 10px;
+	background-color: var(--light-color);
+	line-height: 1.8;
 }
 
 .reg__accept {
@@ -628,6 +640,7 @@ body {
 	}
 
 	.program__title > svg {
+		min-width: 2rem;
 		width: 2rem;
 		top: 4px;
 	}
@@ -807,6 +820,12 @@ body {
 	.reg__name svg:hover,
 	.reg__class svg:hover {
 		transform: scale(1.1);
+	}
+
+	.reg__programs {
+		font-size: 2rem;
+		padding: 1.5rem;
+		border-radius: 15px;
 	}
 
 	.links__item:hover a {
