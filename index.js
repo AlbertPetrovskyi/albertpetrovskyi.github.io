@@ -1,4 +1,4 @@
-const targetDate = new Date('2025-11-11T00:00:00+01:00');
+const targetDate = new Date('2025-11-17T00:00:00+01:00');
 const GOOGLE_SHEET_API = 'https://script.google.com/macros/s/AKfycbxUlTEanoHNBFz9i-GLNh7RFnSLgVqfQnS-ZLReROUeCgtGYdQZAi4bEpE1ffpcsic/exec';
 
 function updateCountdown() {
@@ -333,7 +333,7 @@ window.addEventListener('DOMContentLoaded', () => {
     });
     
     document.querySelectorAll('.program__title svg').forEach(arrow => {
-        arrow.style.transform = 'rotate(180deg)';
+        arrow.style.transform = 'rotate(0deg)';
     });
     
     fetchCapacityFromSheet();
@@ -396,7 +396,6 @@ window.addEventListener('DOMContentLoaded', () => {
             }
         }
         
-        // Display selected programs if already submitted
         if (hasSubmitted === 'true') {
             const firstProgram = localStorage.getItem('firstProgramSubmitted');
             const secondProgram = localStorage.getItem('secondProgramSubmitted');
@@ -419,10 +418,10 @@ document.querySelectorAll('.program__title').forEach(title => {
 		
 		if (description.style.display === 'none') {
 				description.style.display = 'block';
-				arrow.style.transform = 'rotate(0deg)';
+				arrow.style.transform = 'rotate(180deg)';
 		} else {
 				description.style.display = 'none';
-				arrow.style.transform = 'rotate(180deg)';
+				arrow.style.transform = 'rotate(0deg)';
 		}
 	});
 });
