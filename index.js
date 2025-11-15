@@ -1,5 +1,5 @@
 const targetDate = new Date('2025-11-14T00:00:00+01:00');
-const GOOGLE_SHEET_API = 'https://script.google.com/macros/s/AKfycby61ARUx84c07j-b7YLnZMqbRPS1txMhqJds_ZFW-bU_wlwt5DKSi1ILKpbNAiX3Qk/exec';
+const GOOGLE_SHEET_API = 'https://script.google.com/macros/s/AKfycbyVYDGLSC8x7tfeR_HXajxztM3g0dMNc63Yr3pBqHYJACS3aDAOe7L6HPdBdPTeppu7/exec';
 const classes = {
 	'Jak to bylo roku 1989 na Hejčíně': 'A168',
 	'Vzpomínky na Sametovou revoluci v Olomouci': 'B280',
@@ -41,10 +41,10 @@ function getProgramBlocks(programDiv) {
     const capacityText = capacityDiv?.textContent.trim() || '';
     
     if (capacityText.includes('SPOJENÉ')) {
-        // SPOJENÉ programs occupy BOTH blocks with single registration
+        
         return 'merged';
     } else if (capacityText.includes('Blok 1:') && capacityText.includes('Blok 2:')) {
-        // Both blocks available - user can choose which one
+        
         return 'both';
     } else if (capacityText.includes('Blok 1:')) {
         return 'block1';
@@ -103,6 +103,9 @@ function updateCountdown() {
 
 let selectedPrograms = [];
 
+
+let capacityLoaded = false;
+
 function updateProgramButtons() {
     const now = new Date();
     const timerActive = targetDate - now > 0;
@@ -111,10 +114,33 @@ function updateProgramButtons() {
     const programButtons = document.querySelectorAll('.program__button');
     const programDivs = document.querySelectorAll('.programs__program');
     
-    // Determine current selection state
+    // Helper function to get available blocks
+    const getAvailableBlocks = (progDiv) => {
+        const capacityDiv = progDiv.querySelector('.program__capacity');
+        const capacityText = capacityDiv?.textContent.trim();
+        
+        if (!capacityText.includes('Blok 1:') || !capacityText.includes('Blok 2:')) {
+            return null;
+        }
+        
+        const block1Match = capacityText.match(/Blok 1:\s*(\d+)\/(\d+)/);
+        const block2Match = capacityText.match(/Blok 2:\s*(\d+)\/(\d+)/);
+        
+        const block1Full = block1Match ? parseInt(block1Match[1]) >= parseInt(block1Match[2]) : true;
+        const block2Full = block2Match ? parseInt(block2Match[1]) >= parseInt(block2Match[2]) : true;
+        
+        const available = [];
+        if (!block1Full) available.push('block1');
+        if (!block2Full) available.push('block2');
+        
+        return available;
+    };
+    
     let block1Selected = false;
     let block2Selected = false;
     let mergedSelected = false;
+    let selectedBlock1Only = null; // Track if a 'both' program with only block1 available is selected
+    let selectedBlock2Only = null; // Track if a 'both' program with only block2 available is selected
     
     selectedPrograms.forEach(selectedIndex => {
         const programType = getProgramBlocks(programDivs[selectedIndex]);
@@ -126,8 +152,16 @@ function updateProgramButtons() {
         } else if (programType === 'block2') {
             block2Selected = true;
         } else if (programType === 'both') {
-            // For 'both' type, we need to determine which block user selected it for
-            // This will be handled during selection
+            const availableBlocks = getAvailableBlocks(programDivs[selectedIndex]);
+            if (availableBlocks && availableBlocks.length === 1) {
+                if (availableBlocks[0] === 'block1') {
+                    selectedBlock1Only = selectedIndex;
+                    block1Selected = true;
+                } else if (availableBlocks[0] === 'block2') {
+                    selectedBlock2Only = selectedIndex;
+                    block2Selected = true;
+                }
+            }
         }
     });
     
@@ -180,31 +214,43 @@ function updateProgramButtons() {
         let shouldDisable = false;
         
         if (!isAlreadySelected) {
-            // If merged program is selected, disable everything else
             if (mergedSelected) {
                 shouldDisable = true;
-            }
-            // If this is a merged program and anything is selected, disable it
-            else if (programType === 'merged' && selectedPrograms.length > 0) {
+            } else if (programType === 'merged' && selectedPrograms.length > 0) {
                 shouldDisable = true;
-            }
-            // If 2 programs already selected, disable everything else
-            else if (selectedPrograms.length >= 2) {
+            } else if (selectedPrograms.length >= 2) {
                 shouldDisable = true;
-            }
-            // Block conflict: disable if the required block is already taken
-            else if (programType === 'block1' && block1Selected) {
+            } else if (programType === 'block1' && block1Selected) {
                 shouldDisable = true;
             } else if (programType === 'block2' && block2Selected) {
                 shouldDisable = true;
-            }
-            // For 'both' type programs, they can still be selected unless both blocks are taken
-            else if (programType === 'both' && block1Selected && block2Selected) {
-                shouldDisable = true;
+            } else if (programType === 'both') {
+                const currentAvailable = getAvailableBlocks(programDiv);
+                
+                if (currentAvailable && currentAvailable.length === 1) {
+                    // This program has only one available block
+                    if (currentAvailable[0] === 'block1') {
+                        // Only Block 1 available - check if Block 1 is taken
+                        if (block1Selected || selectedBlock1Only !== null) {
+                            shouldDisable = true;
+                        }
+                    } else if (currentAvailable[0] === 'block2') {
+                        // Only Block 2 available - check if Block 2 is taken
+                        if (block2Selected || selectedBlock2Only !== null) {
+                            shouldDisable = true;
+                        }
+                    }
+                } else if (currentAvailable && currentAvailable.length === 2) {
+                    // Both blocks available - disable if both are taken
+                    if (block1Selected && block2Selected) {
+                        shouldDisable = true;
+                    }
+                }
             }
         }
         
-        if (timerActive || !isRegistered || isFull || shouldDisable) {
+        // Disable if capacity not loaded yet
+        if (!capacityLoaded || timerActive || !isRegistered || isFull || shouldDisable) {
             button.disabled = true;
         } else {
             button.disabled = false;
@@ -254,23 +300,78 @@ document.querySelectorAll('.program__button').forEach((button, index) => {
 					}
 				}
 			} else if (selectedPrograms.length < 2) {
-				// Check block conflicts
+				// Helper function to check available blocks for 'both' type
+				const getAvailableBlocks = (progDiv) => {
+					const capacityDiv = progDiv.querySelector('.program__capacity');
+					const capacityText = capacityDiv?.textContent.trim();
+					
+					if (!capacityText.includes('Blok 1:') || !capacityText.includes('Blok 2:')) {
+						return null;
+					}
+					
+					const block1Match = capacityText.match(/Blok 1:\s*(\d+)\/(\d+)/);
+					const block2Match = capacityText.match(/Blok 2:\s*(\d+)\/(\d+)/);
+					
+					const block1Full = block1Match ? parseInt(block1Match[1]) >= parseInt(block1Match[2]) : true;
+					const block2Full = block2Match ? parseInt(block2Match[1]) >= parseInt(block2Match[2]) : true;
+					
+					const available = [];
+					if (!block1Full) available.push('block1');
+					if (!block2Full) available.push('block2');
+					
+					return available;
+				};
+				
 				let canSelect = true;
 				
-				selectedPrograms.forEach(selectedIndex => {
-					const selectedType = getProgramBlocks(programDivs[selectedIndex]);
+				// If selecting a 'both' type and one program already selected
+				if (programType === 'both' && selectedPrograms.length === 1) {
+					const firstSelectedType = getProgramBlocks(programDivs[selectedPrograms[0]]);
+					const availableBlocks = getAvailableBlocks(programDiv);
 					
-					if (selectedType === 'merged') {
-						canSelect = false;
-					} else if (programType === 'block1' && selectedType === 'block1') {
-						canSelect = false;
-					} else if (programType === 'block2' && selectedType === 'block2') {
-						canSelect = false;
-					} else if (programType === 'both' || selectedType === 'both') {
-						// For 'both' type, need special handling
-						// Will be assigned to available block
+					// Check if the available block of the new program conflicts with the first selected
+					if (availableBlocks && availableBlocks.length === 1) {
+						const onlyAvailableBlock = availableBlocks[0];
+						
+						// If first selected is a single block type and conflicts
+						if (firstSelectedType === onlyAvailableBlock) {
+							// Check if first selected can be reassigned (is 'both' type)
+							const firstSelectedAvailable = getAvailableBlocks(programDivs[selectedPrograms[0]]);
+							
+							if (firstSelectedAvailable && firstSelectedAvailable.length >= 2) {
+								// First selected can be reassigned - allow selection
+								canSelect = true;
+							} else {
+								canSelect = false;
+							}
+						}
 					}
-				});
+				} else {
+					// Standard conflict checking
+					selectedPrograms.forEach(selectedIndex => {
+						const selectedType = getProgramBlocks(programDivs[selectedIndex]);
+						
+						if (selectedType === 'merged') {
+							canSelect = false;
+						} else if (programType === 'block1' && selectedType === 'block1') {
+							canSelect = false;
+						} else if (programType === 'block2' && selectedType === 'block2') {
+							canSelect = false;
+						} else if (programType === 'both' && selectedType === 'both') {
+							// Both are 'both' type - check if they can coexist
+							const currentAvailable = getAvailableBlocks(programDiv);
+							const selectedAvailable = getAvailableBlocks(programDivs[selectedIndex]);
+							
+							if (currentAvailable && selectedAvailable) {
+								// If both have only one available block and it's the same, conflict
+								if (currentAvailable.length === 1 && selectedAvailable.length === 1 && 
+                                    currentAvailable[0] === selectedAvailable[0]) {
+                                    canSelect = false;
+                                }
+							}
+						}
+					});
+				}
 				
 				if (canSelect) {
 					selectedPrograms.push(programIndex);
@@ -295,76 +396,152 @@ document.querySelectorAll('.program__button').forEach((button, index) => {
 	});
 });
 
+// Update the updateConfirmationButton function to handle smart reassignment
 function updateConfirmationButton() {
-	let confirmContainer = document.querySelector('.confirmation__container');
-	
-	const programDivs = document.querySelectorAll('.programs__program');
-	
-	// Check if we have valid selection
-	let canConfirm = false;
-	let firstProgram = '';
-	let secondProgram = '';
-	
-	if (selectedPrograms.length === 1) {
-		const programType = getProgramBlocks(programDivs[selectedPrograms[0]]);
-		if (programType === 'merged') {
-			// Merged program selected - can confirm
-			canConfirm = true;
-			const programText = programDivs[selectedPrograms[0]].querySelector('.program__title > span').textContent;
-			firstProgram = programText;
-			secondProgram = programText;
-		}
-	} else if (selectedPrograms.length === 2) {
-		// Two programs selected - need to assign to blocks
-		canConfirm = true;
-		
-		const firstProgramDiv = programDivs[selectedPrograms[0]];
-		const secondProgramDiv = programDivs[selectedPrograms[1]];
-		
-		const firstProgramText = firstProgramDiv.querySelector('.program__title > span').textContent;
-		const secondProgramText = secondProgramDiv.querySelector('.program__title > span').textContent;
-		
-		const firstType = getProgramBlocks(firstProgramDiv);
-		const secondType = getProgramBlocks(secondProgramDiv);
-		
-		// Assign to blocks based on types
-		if (firstType === 'block1' || (firstType === 'both' && secondType === 'block2')) {
-			firstProgram = firstProgramText;
-			secondProgram = secondProgramText;
-		} else if (firstType === 'block2' || (firstType === 'both' && secondType === 'block1')) {
-			firstProgram = secondProgramText;
-			secondProgram = firstProgramText;
-		} else {
-			// Both are 'both' type - assign in order
-			firstProgram = firstProgramText;
-			secondProgram = secondProgramText;
-		}
-	}
-	
-	if (canConfirm) {
-		if (!confirmContainer) {
-			confirmContainer = document.createElement('div');
-			confirmContainer.className = 'confirmation__container';
-			
-			const backButton = document.createElement('button');
-			backButton.className = 'confirmation__back';
-			backButton.textContent = 'Zpět';
-			backButton.type = 'button';
-			backButton.addEventListener('click', () => {
-				confirmContainer.remove();
-			});
-			
-			const confirmButton = document.createElement('button');
-			confirmButton.className = 'confirmation__button';
-			confirmButton.type = 'button';
-			
-			if (firstProgram === secondProgram) {
-				confirmButton.innerHTML = `${firstProgram} <br>Potvrdit?`;
-			} else {
-				confirmButton.innerHTML = `Blok 1: ${firstProgram}<br>Blok 2: ${secondProgram}<br>Potvrdit?`;
-			}
-			
-			confirmButton.addEventListener('click', async () => {
+    let confirmContainer = document.querySelector('.confirmation__container');
+    
+    const programDivs = document.querySelectorAll('.programs__program');
+    
+    let canConfirm = false;
+    let firstProgram = '';
+    let secondProgram = '';
+    
+    if (selectedPrograms.length === 1) {
+        const programType = getProgramBlocks(programDivs[selectedPrograms[0]]);
+        if (programType === 'merged') {
+            canConfirm = true;
+            const programText = programDivs[selectedPrograms[0]].querySelector('.program__title > span').textContent;
+            firstProgram = programText;
+            secondProgram = programText;
+        }
+    } else if (selectedPrograms.length === 2) {
+        canConfirm = true;
+        
+        const firstProgramDiv = programDivs[selectedPrograms[0]];
+        const secondProgramDiv = programDivs[selectedPrograms[1]];
+        
+        const firstProgramText = firstProgramDiv.querySelector('.program__title > span').textContent;
+        const secondProgramText = secondProgramDiv.querySelector('.program__title > span').textContent;
+        
+        const firstType = getProgramBlocks(firstProgramDiv);
+        const secondType = getProgramBlocks(secondProgramDiv);
+        
+        // Helper function to check which block is available for 'both' type programs
+        const getAvailableBlocks = (programDiv) => {
+            const capacityDiv = programDiv.querySelector('.program__capacity');
+            const capacityText = capacityDiv?.textContent.trim();
+            
+            if (!capacityText.includes('Blok 1:') || !capacityText.includes('Blok 2:')) {
+                return null;
+            }
+            
+            const block1Match = capacityText.match(/Blok 1:\s*(\d+)\/(\d+)/);
+            const block2Match = capacityText.match(/Blok 2:\s*(\d+)\/(\d+)/);
+            
+            const block1Full = block1Match ? parseInt(block1Match[1]) >= parseInt(block1Match[2]) : true;
+            const block2Full = block2Match ? parseInt(block2Match[1]) >= parseInt(block2Match[2]) : true;
+            
+            const available = [];
+            if (!block1Full) available.push('block1');
+            if (!block2Full) available.push('block2');
+            
+            return available;
+        };
+        
+        // Determine assignment with smart reassignment
+        let firstAssignedTo = null;
+        let secondAssignedTo = null;
+        
+        // Get available blocks for both programs
+        const firstAvailable = firstType === 'both' ? getAvailableBlocks(firstProgramDiv) : null;
+        const secondAvailable = secondType === 'both' ? getAvailableBlocks(secondProgramDiv) : null;
+        
+        // Assign second program first if it has only one available block
+        if (secondAvailable && secondAvailable.length === 1) {
+            secondAssignedTo = secondAvailable[0];
+            
+            // Assign first program to the other block
+            if (firstType === 'block1') {
+                firstAssignedTo = 'block1';
+            } else if (firstType === 'block2') {
+                firstAssignedTo = 'block2';
+            } else if (firstAvailable) {
+                // First is 'both' type, assign to the opposite block
+                firstAssignedTo = secondAssignedTo === 'block1' ? 'block2' : 'block1';
+            }
+        } else if (firstAvailable && firstAvailable.length === 1) {
+            firstAssignedTo = firstAvailable[0];
+            
+            // Assign second program to the other block
+            if (secondType === 'block1') {
+                secondAssignedTo = 'block1';
+            } else if (secondType === 'block2') {
+                secondAssignedTo = 'block2';
+            } else if (secondAvailable) {
+                secondAssignedTo = firstAssignedTo === 'block1' ? 'block2' : 'block1';
+            }
+        } else {
+            // Standard assignment
+            if (firstType === 'block1') {
+                firstAssignedTo = 'block1';
+            } else if (firstType === 'block2') {
+                firstAssignedTo = 'block2';
+            } else if (firstAvailable && firstAvailable.includes('block1')) {
+                firstAssignedTo = 'block1';
+            } else if (firstAvailable && firstAvailable.includes('block2')) {
+                firstAssignedTo = 'block2';
+            }
+            
+            if (secondType === 'block1') {
+                secondAssignedTo = 'block1';
+            } else if (secondType === 'block2') {
+                secondAssignedTo = 'block2';
+            } else if (secondAvailable) {
+                secondAssignedTo = firstAssignedTo === 'block1' ? 'block2' : 'block1';
+            }
+        }
+        
+        // Final assignment
+        if (firstAssignedTo === 'block1' && secondAssignedTo === 'block2') {
+            firstProgram = firstProgramText;
+            secondProgram = secondProgramText;
+        } else if (firstAssignedTo === 'block2' && secondAssignedTo === 'block1') {
+            firstProgram = secondProgramText;
+            secondProgram = firstProgramText;
+        } else if (secondAssignedTo === 'block1' && firstAssignedTo === 'block2') {
+            firstProgram = secondProgramText;
+            secondProgram = firstProgramText;
+        } else {
+            // Fallback
+            firstProgram = firstProgramText;
+            secondProgram = secondProgramText;
+        }
+    }
+    
+    if (canConfirm) {
+        if (!confirmContainer) {
+            confirmContainer = document.createElement('div');
+            confirmContainer.className = 'confirmation__container';
+            
+            const backButton = document.createElement('button');
+            backButton.className = 'confirmation__back';
+            backButton.textContent = 'Zpět';
+            backButton.type = 'button';
+            backButton.addEventListener('click', () => {
+                confirmContainer.remove();
+            });
+            
+            const confirmButton = document.createElement('button');
+            confirmButton.className = 'confirmation__button';
+            confirmButton.type = 'button';
+            
+            if (firstProgram === secondProgram) {
+                confirmButton.innerHTML = `${firstProgram} <br>Potvrdit?`;
+            } else {
+                confirmButton.innerHTML = `Blok 1: ${firstProgram}<br>Blok 2: ${secondProgram}<br>Potvrdit?`;
+            }
+            
+            confirmButton.addEventListener('click', async () => {
                 try {
                     const hasSubmitted = localStorage.getItem('hasSubmittedPrograms');
                     if (hasSubmitted === 'true') {
@@ -471,44 +648,6 @@ function displaySelectedPrograms(firstProgram, secondProgram) {
 const countdownInterval = setInterval(updateCountdown, 60000);
 updateCountdown();
 
-
-document.querySelector('.action__reg').addEventListener('submit', (e) => {
-	e.preventDefault();
-	
-	const nameInput = document.querySelector('.reg__name input');
-	const classInput = document.querySelector('.reg__class input');
-	const classDiv = document.querySelector('.reg__class');
-	const acceptLabel = document.querySelector('.reg__accept');
-	const submitButton = document.querySelector('.reg__button');
-	const gradientText = document.querySelector('.action__text-gradient');
-	const headerLink = document.querySelector('.header__reg-opened');
-	
-	const name = nameInput.value;
-	const className = classInput.value;
-	
-	localStorage.setItem('userName', name);
-	localStorage.setItem('userClass', className);
-	
-	if (headerLink) {
-		headerLink.textContent = `${name} ${className}`;
-	}
-	
-	nameInput.value = `${name} ${className}`;
-	nameInput.disabled = true;
-	
-	classDiv.remove();
-	
-	acceptLabel.remove();
-	
-	submitButton.textContent = 'Děkujeme za přihlášení!';
-	submitButton.disabled = true;
-	
-	gradientText.textContent = 'Vybírej už teď!';
-	
-	updateProgramButtons();
-});
-
-// Replace the fetchCapacityFromSheet function with this:
 async function fetchCapacityFromSheet() {
     try {
         const res = await fetch(`${GOOGLE_SHEET_API}?action=getCapacity`, {
@@ -531,20 +670,15 @@ async function fetchCapacityFromSheet() {
                     const program = capacityData[programTitle];
                     
                     if (program.type === 'spojene') {
-                        // Type 5: SPOJENÉ - merged cells
                         capacityDiv.textContent = `${program.current} / ${program.max} (SPOJENÉ)`;
                     } else if (program.type === 'separate') {
-                        // Types 1-4: Separate blocks
                         let capacityText = '';
                         
                         if (program.firstBlock.available && program.secondBlock.available) {
-                            // Type 1 or 2: Both blocks available
                             capacityText = `Blok 1: ${program.firstBlock.current}/${program.firstBlock.max} | Blok 2: ${program.secondBlock.current}/${program.secondBlock.max}`;
                         } else if (program.firstBlock.available && !program.secondBlock.available) {
-                            // Type 4: Only first block
                             capacityText = `Blok 1: ${program.firstBlock.current}/${program.firstBlock.max}`;
                         } else if (!program.firstBlock.available && program.secondBlock.available) {
-                            // Type 3: Only second block
                             capacityText = `Blok 2: ${program.secondBlock.current}/${program.secondBlock.max}`;
                         }
                         
@@ -553,101 +687,13 @@ async function fetchCapacityFromSheet() {
                 }
             });
             
+            capacityLoaded = true;
             updateProgramButtons();
         }
     } catch (error) {
         console.error('Error fetching capacity:', error);
     }
 }
-
-window.addEventListener('DOMContentLoaded', () => {
-    const savedName = localStorage.getItem('userName');
-    const savedClass = localStorage.getItem('userClass');
-    const savedPrograms = localStorage.getItem('selectedPrograms');
-    const hasSubmitted = localStorage.getItem('hasSubmittedPrograms');
-    const isTeacher = localStorage.getItem('isTeacher') === 'true';
-    
-    document.querySelectorAll('.program__description').forEach(description => {
-        description.style.display = 'none';
-    });
-    
-    document.querySelectorAll('.program__title svg').forEach(arrow => {
-        arrow.style.transform = 'rotate(0deg)';
-    });
-    
-    fetchCapacityFromSheet();
-    
-    if (savedPrograms) {
-        selectedPrograms = JSON.parse(savedPrograms);
-        
-        document.querySelectorAll('.program__button').forEach((button, index) => {
-            if (selectedPrograms.includes(index)) {
-                button.style.border = '2px solid var(--green-color)';
-                button.style.color = 'var(--green-color)';
-                button.style.backgroundColor = 'var(--light-color)';
-                
-                const svg = button.querySelector('svg');
-                if (svg) {
-                    svg.querySelector('path').style.fill = 'var(--green-color)';
-                    button.innerHTML = '';
-                    button.appendChild(svg);
-                    button.appendChild(document.createTextNode('Vybráno'));
-                }
-            }
-            
-            if (hasSubmitted === 'true') {
-                button.disabled = true;
-            }
-        });
-        
-        if (hasSubmitted !== 'true') {
-            updateConfirmationButton();
-        }
-    }
-    
-    if (savedName && savedClass) {
-        const nameInput = document.querySelector('.reg__name input');
-        const classDiv = document.querySelector('.reg__class');
-        const acceptLabel = document.querySelector('.reg__accept');
-        const teacherLabel = document.querySelector('.reg__teacher');
-        const submitButton = document.querySelector('.reg__button');
-        const gradientText = document.querySelector('.action__text-gradient');
-        const headerLink = document.querySelector('.header__reg-opened');
-        
-        // Show only name in header
-        if (headerLink) {
-            headerLink.textContent = savedName;
-        }
-        
-        nameInput.value = isTeacher ? `${savedName}` : `${savedName} ${savedClass}`;
-        nameInput.disabled = true;
-        
-        if (classDiv) classDiv.remove();
-        if (acceptLabel) acceptLabel.remove();
-        if (teacherLabel) teacherLabel.remove();
-        
-        submitButton.textContent = 'Děkujeme za přihlášení!';
-        submitButton.disabled = true;
-        
-        if (gradientText) {
-            if (hasSubmitted === 'true') {
-                gradientText.textContent = 'Řekni ostatním!';
-            } else {
-                gradientText.textContent = 'Vybírej už teď!';
-            }
-        }
-        
-        if (hasSubmitted === 'true') {
-            const firstProgram = localStorage.getItem('firstProgramSubmitted');
-            const secondProgram = localStorage.getItem('secondProgramSubmitted');
-            if (firstProgram && secondProgram) {
-                displaySelectedPrograms(firstProgram, secondProgram);
-            }
-        }
-    }
-    
-    updateProgramButtons();
-});
 
 const teacherCheckbox = document.querySelector('.reg__teacher input');
 const classInput = document.querySelector('.reg__class input');
@@ -656,13 +702,13 @@ const originalPlaceholder = classInput.placeholder;
 
 teacherCheckbox.addEventListener('change', (e) => {
     if (e.target.checked) {
-        // When teacher checkbox is checked
+        
         classInput.value = 'Učitel/Učitelka';
         classInput.disabled = true;
         classInput.removeAttribute('pattern');
         classInput.removeAttribute('required');
     } else {
-        // When teacher checkbox is unchecked
+        
         classInput.value = '';
         classInput.disabled = false;
         classInput.pattern = originalPattern;
@@ -671,7 +717,7 @@ teacherCheckbox.addEventListener('change', (e) => {
     }
 });
 
-// Also update the form submit handler to handle teacher case
+
 document.querySelector('.action__reg').addEventListener('submit', (e) => {
     e.preventDefault();
     
@@ -692,7 +738,7 @@ document.querySelector('.action__reg').addEventListener('submit', (e) => {
     localStorage.setItem('userClass', className);
     localStorage.setItem('isTeacher', isTeacher);
     
-    // Show only name in header
+    
     if (headerLink) {
         headerLink.textContent = name;
     }
@@ -716,7 +762,7 @@ document.querySelector('.action__reg').addEventListener('submit', (e) => {
     }, 1000);
 });
 
-// Update the window load handler to restore teacher state
+
 window.addEventListener('DOMContentLoaded', () => {
     const savedName = localStorage.getItem('userName');
     const savedClass = localStorage.getItem('userClass');
@@ -771,7 +817,7 @@ window.addEventListener('DOMContentLoaded', () => {
         const gradientText = document.querySelector('.action__text-gradient');
         const headerLink = document.querySelector('.header__reg-opened');
         
-        // Show only name in header
+        
         if (headerLink) {
             headerLink.textContent = savedName;
         }
