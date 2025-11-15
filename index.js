@@ -1,8 +1,59 @@
 const targetDate = new Date('2025-11-14T00:00:00+01:00');
-const GOOGLE_SHEET_API = 'https://script.google.com/macros/s/AKfycbxUlTEanoHNBFz9i-GLNh7RFnSLgVqfQnS-ZLReROUeCgtGYdQZAi4bEpE1ffpcsic/exec';
+const GOOGLE_SHEET_API = 'https://script.google.com/macros/s/AKfycby61ARUx84c07j-b7YLnZMqbRPS1txMhqJds_ZFW-bU_wlwt5DKSi1ILKpbNAiX3Qk/exec';
 const classes = {
-	'1': '3.B4',
+	'Jak to bylo roku 1989 na Hejčíně': 'A168',
+	'Vzpomínky na Sametovou revoluci v Olomouci': 'B280',
+	'Hledání pravdy a svobody. Jak se jako středoškolský student dostal do Polska a mezi disidenty, československou opozici': 'B381',
+	'Hledání pravdy a svobody. Rok 1989 ve fotografiích Oty Nepilého – Polsko, východní Německo, Československo, Rumunsko': 'B381',
+	'Společnost a ekonomika 1948-1989': 'B190',
+	'Pád komunismu v Československu a návrat k demokracii': 'B190',
+	'Když padla cenzura': 'B490',
+	'Osobní vzpomínky na demonstraci na Národní třídě': 'B382',
+	'Vzpomínky na sametovou Prahu': 'B383',
+	'Revoluce bez sítí – příběh studentů, letáků a šeptandy': 'B384',
+	'„Dnes udělám to, co jiní neudělají, takže zítra dokážu to, co jiní nemůžou.“ Jerry Rice': 'B390',
+	'Havel a jeho hry': 'B481',
+	'Svobodný v nesvobodné zemi, aneb proč si vážit svobody': 'A367',
+	'Debata s pamětníkem Martinem Šteinerem': 'A366',
+	'Debata s olomouckým pamětníkem Vítem Pelikánem': 'B281',
+	'Gaudeamus igitur, studium v době totality a demokracie': 'A368',
+	'Debata s pamětníkem Michalem Mrtvým': 'B282',
+	'Život v undergroundu a svoboda jako životní postoj': 'B283',
+	'Budování demokracie a občanský sektor (ONLINE)': 'B485',
+	'Účast veřejnosti v rozhodovacích procesech a neziskovky (ONLINE)': 'B485',
+	'Pošli to dál! Jak se informovalo v době revoluce': 'A365',
+	'Debata s pamětnicí Květou Princovou': 'A160',
+	'Svědectví Dagmar Přidalové a co si z toho vzít dnes': 'B264',
+	'Otevřená výtvarka': 'A130 AUVV1',
+	'Revoluce v Olomouci & propojení se současností': 'A364',
+	'Beseda s pamětníkem Ivanem Langerem': 'A261',
+	'Beseda s pamětníky olomouckého Sametu 1989': 'A361',
+	'Simulace Poslanecké sněmovny (SPOJENÉ)': 'A465',
+	'Skauting mi změnil život, aneb proč režim organizaci dvakrát zakázal': 'A268',
+	'Workshop: Strážci demokracie (SPOJENÉ)': 'A267',
+	'Přichází zelená sametová revoluce': 'A266',
+	'Sametová revoluce v Olomouci z pohledu tehdejšího studenta': 'A265',
+	'Promítání snímku Prezidentka s následnou debatou': '...'
 };
+
+function getProgramBlocks(programDiv) {
+    const capacityDiv = programDiv.querySelector('.program__capacity');
+    const capacityText = capacityDiv?.textContent.trim() || '';
+    
+    if (capacityText.includes('SPOJENÉ')) {
+        // SPOJENÉ programs occupy BOTH blocks with single registration
+        return 'merged';
+    } else if (capacityText.includes('Blok 1:') && capacityText.includes('Blok 2:')) {
+        // Both blocks available - user can choose which one
+        return 'both';
+    } else if (capacityText.includes('Blok 1:')) {
+        return 'block1';
+    } else if (capacityText.includes('Blok 2:')) {
+        return 'block2';
+    }
+    
+    return null;
+}
 
 function updateCountdown() {
     const now = new Date();
@@ -53,55 +104,142 @@ function updateCountdown() {
 let selectedPrograms = [];
 
 function updateProgramButtons() {
-	const now = new Date();
-	const timerActive = targetDate - now > 0;
-	const isRegistered = localStorage.getItem('userName') && localStorage.getItem('userClass');
-	
-	const programButtons = document.querySelectorAll('.program__button');
-	
-	programButtons.forEach(button => {
-		const capacityDiv = button.closest('.program__buttons').querySelector('.program__capacity');
-		const capacityText = capacityDiv?.textContent.trim();
-		
-		const [current, total] = capacityText.split('/').map(num => parseInt(num.trim()));
-		const isFull = current >= total;
-		
-		if (isFull) {
-				capacityDiv.style.border = '2px solid var(--red-color)';
-				capacityDiv.classList.add('capacity__full');
-		} else {
-				capacityDiv.style.border = '2px solid var(--blue-color)';
-				capacityDiv.classList.remove('capacity__full');
-		}
-		
-		if (timerActive || !isRegistered || isFull) {
-				button.disabled = true;
-		} else {
-				button.disabled = false;
-		}
-	});
+    const now = new Date();
+    const timerActive = targetDate - now > 0;
+    const isRegistered = localStorage.getItem('userName') && localStorage.getItem('userClass');
+    
+    const programButtons = document.querySelectorAll('.program__button');
+    const programDivs = document.querySelectorAll('.programs__program');
+    
+    // Determine current selection state
+    let block1Selected = false;
+    let block2Selected = false;
+    let mergedSelected = false;
+    
+    selectedPrograms.forEach(selectedIndex => {
+        const programType = getProgramBlocks(programDivs[selectedIndex]);
+        
+        if (programType === 'merged') {
+            mergedSelected = true;
+        } else if (programType === 'block1') {
+            block1Selected = true;
+        } else if (programType === 'block2') {
+            block2Selected = true;
+        } else if (programType === 'both') {
+            // For 'both' type, we need to determine which block user selected it for
+            // This will be handled during selection
+        }
+    });
+    
+    programButtons.forEach((button, index) => {
+        const programDiv = button.closest('.programs__program');
+        const capacityDiv = button.closest('.program__buttons').querySelector('.program__capacity');
+        const capacityText = capacityDiv?.textContent.trim();
+        
+        let isFull = false;
+        
+        if (capacityText.includes('SPOJENÉ')) {
+            const match = capacityText.match(/(\d+)\s*\/\s*(\d+)/);
+            if (match) {
+                const [_, current, max] = match;
+                isFull = parseInt(current) >= parseInt(max);
+            }
+        } else if (capacityText.includes('Blok')) {
+            const block1Match = capacityText.match(/Blok 1:\s*(\d+)\/(\d+)/);
+            const block2Match = capacityText.match(/Blok 2:\s*(\d+)\/(\d+)/);
+            
+            let block1Full = false;
+            let block2Full = false;
+            
+            if (block1Match) {
+                block1Full = parseInt(block1Match[1]) >= parseInt(block1Match[2]);
+            } else {
+                block1Full = true;
+            }
+            
+            if (block2Match) {
+                block2Full = parseInt(block2Match[1]) >= parseInt(block2Match[2]);
+            } else {
+                block2Full = true;
+            }
+            
+            isFull = block1Full && block2Full;
+        }
+        
+        if (isFull) {
+            capacityDiv.style.border = '2px solid var(--red-color)';
+            capacityDiv.classList.add('capacity__full');
+        } else {
+            capacityDiv.style.border = '2px solid var(--blue-color)';
+            capacityDiv.classList.remove('capacity__full');
+        }
+        
+        const isAlreadySelected = selectedPrograms.includes(index);
+        const programType = getProgramBlocks(programDiv);
+        
+        let shouldDisable = false;
+        
+        if (!isAlreadySelected) {
+            // If merged program is selected, disable everything else
+            if (mergedSelected) {
+                shouldDisable = true;
+            }
+            // If this is a merged program and anything is selected, disable it
+            else if (programType === 'merged' && selectedPrograms.length > 0) {
+                shouldDisable = true;
+            }
+            // If 2 programs already selected, disable everything else
+            else if (selectedPrograms.length >= 2) {
+                shouldDisable = true;
+            }
+            // Block conflict: disable if the required block is already taken
+            else if (programType === 'block1' && block1Selected) {
+                shouldDisable = true;
+            } else if (programType === 'block2' && block2Selected) {
+                shouldDisable = true;
+            }
+            // For 'both' type programs, they can still be selected unless both blocks are taken
+            else if (programType === 'both' && block1Selected && block2Selected) {
+                shouldDisable = true;
+            }
+        }
+        
+        if (timerActive || !isRegistered || isFull || shouldDisable) {
+            button.disabled = true;
+        } else {
+            button.disabled = false;
+        }
+    });
 }
 
 document.querySelectorAll('.program__button').forEach((button, index) => {
 	button.addEventListener('click', () => {
 		const programIndex = index;
+		const programDiv = button.closest('.programs__program');
+		const programType = getProgramBlocks(programDiv);
 		const isSelected = selectedPrograms.includes(programIndex);
 		
 		if (isSelected) {
-				selectedPrograms = selectedPrograms.filter(i => i !== programIndex);
-				button.style.border = '2px solid var(--dark-color)';
-				button.style.color = 'var(--dark-color)';
-				button.style.backgroundColor = 'var(--light-color)';
-				
-				const svg = button.querySelector('svg');
-				if (svg) {
-					svg.querySelector('path').style.fill = 'var(--dark-color)';
-					button.innerHTML = '';
-					button.appendChild(svg);
-					button.appendChild(document.createTextNode('Vybrat'));
-				}
+			// Deselect program
+			selectedPrograms = selectedPrograms.filter(i => i !== programIndex);
+			button.style.border = '2px solid var(--dark-color)';
+			button.style.color = 'var(--dark-color)';
+			button.style.backgroundColor = 'var(--light-color)';
+			
+			const svg = button.querySelector('svg');
+			if (svg) {
+				svg.querySelector('path').style.fill = 'var(--dark-color)';
+				button.innerHTML = '';
+				button.appendChild(svg);
+				button.appendChild(document.createTextNode('Vybrat'));
+			}
 		} else {
-				if (selectedPrograms.length < 2) {
+			// Try to select program
+			const programDivs = document.querySelectorAll('.programs__program');
+			
+			// Check if merged program
+			if (programType === 'merged') {
+				if (selectedPrograms.length === 0) {
 					selectedPrograms.push(programIndex);
 					button.style.border = '2px solid var(--green-color)';
 					button.style.color = 'var(--green-color)';
@@ -115,10 +253,44 @@ document.querySelectorAll('.program__button').forEach((button, index) => {
 						button.appendChild(document.createTextNode('Vybráno'));
 					}
 				}
+			} else if (selectedPrograms.length < 2) {
+				// Check block conflicts
+				let canSelect = true;
+				
+				selectedPrograms.forEach(selectedIndex => {
+					const selectedType = getProgramBlocks(programDivs[selectedIndex]);
+					
+					if (selectedType === 'merged') {
+						canSelect = false;
+					} else if (programType === 'block1' && selectedType === 'block1') {
+						canSelect = false;
+					} else if (programType === 'block2' && selectedType === 'block2') {
+						canSelect = false;
+					} else if (programType === 'both' || selectedType === 'both') {
+						// For 'both' type, need special handling
+						// Will be assigned to available block
+					}
+				});
+				
+				if (canSelect) {
+					selectedPrograms.push(programIndex);
+					button.style.border = '2px solid var(--green-color)';
+					button.style.color = 'var(--green-color)';
+					button.style.backgroundColor = 'var(--light-color)';
+					
+					const svg = button.querySelector('svg');
+					if (svg) {
+						svg.querySelector('path').style.fill = 'var(--green-color)';
+						button.innerHTML = '';
+						button.appendChild(svg);
+						button.appendChild(document.createTextNode('Vybráno'));
+					}
+				}
+			}
 		}
 		
 		localStorage.setItem('selectedPrograms', JSON.stringify(selectedPrograms));
-		
+		updateProgramButtons();
 		updateConfirmationButton();
 	});
 });
@@ -126,118 +298,168 @@ document.querySelectorAll('.program__button').forEach((button, index) => {
 function updateConfirmationButton() {
 	let confirmContainer = document.querySelector('.confirmation__container');
 	
-	if (selectedPrograms.length === 2) {
-		const programDivs = document.querySelectorAll('.programs__program');
-		const firstProgram = programDivs[selectedPrograms[0]].querySelector('.program__title > span').textContent;
-		const secondProgram = programDivs[selectedPrograms[1]].querySelector('.program__title > span').textContent;
-		
-		if (!confirmContainer) {
-				confirmContainer = document.createElement('div');
-				confirmContainer.className = 'confirmation__container';
-				
-				const backButton = document.createElement('button');
-				backButton.className = 'confirmation__back';
-				backButton.textContent = 'Zpět';
-				backButton.type = 'button';
-				backButton.addEventListener('click', () => {
-					confirmContainer.remove();
-				});
-				
-				const confirmButton = document.createElement('button');
-				confirmButton.className = 'confirmation__button';
-				confirmButton.type = 'button';
-				confirmButton.innerHTML = `${firstProgram}, ${secondProgram} &#8211; Potvrdit?`;
-				confirmButton.addEventListener('click', async () => {
-    try {
-        const hasSubmitted = localStorage.getItem('hasSubmittedPrograms');
-        if (hasSubmitted === 'true') {
-            confirmButton.textContent = 'Již odesláno!';
-            confirmButton.style.backgroundColor = 'var(--neutral-color)';
-            confirmButton.disabled = true;
-            return;
-        }
-        
-        const name = localStorage.getItem('userName');
-        const className = localStorage.getItem('userClass');
-        
-        confirmButton.disabled = true;
-        confirmButton.textContent = 'Odesílání...';
-        
-        const formData = new URLSearchParams();
-        formData.append('name', name);
-        formData.append('class', className);
-        formData.append('firstProgram', firstProgram);
-        formData.append('secondProgram', secondProgram);
-        
-        const url = `${GOOGLE_SHEET_API}?name=${encodeURIComponent(name)}&class=${encodeURIComponent(className)}&firstProgram=${encodeURIComponent(firstProgram)}&secondProgram=${encodeURIComponent(secondProgram)}`;
-        
-        const res = await fetch(url, {
-            method: "GET",
-            redirect: "follow"
-        });
-        
-        const result = await res.json();
-        
-        if (result.status === "success") {
-            localStorage.setItem('hasSubmittedPrograms', 'true');
-            localStorage.setItem('firstProgramSubmitted', firstProgram);
-            localStorage.setItem('secondProgramSubmitted', secondProgram);
-            
-            confirmButton.textContent = 'Úspěšně odesláno!';
-            confirmButton.style.backgroundColor = 'var(--green-color)';
-            
-            document.querySelectorAll('.program__button').forEach(btn => {
-                btn.disabled = true;
-            });
-            
-            // Display selected programs under name input
-            displaySelectedPrograms(firstProgram, secondProgram);
-            
-            setTimeout(() => {
-                confirmContainer.remove();
-            }, 2000);
-        } else {
-            throw new Error('Failed to save data');
-        }
-    } catch (error) {
-        console.error('Error submitting data:', error);
-        confirmButton.textContent = 'Chyba! Zkuste to znovu.';
-        confirmButton.style.backgroundColor = 'var(--red-color)';
-        confirmButton.disabled = false;
-        
-        setTimeout(() => {
-            confirmButton.innerHTML = `${firstProgram}, ${secondProgram} &#8211; Potvrdit?`;
-            confirmButton.style.backgroundColor = 'var(--green-color)';
-        }, 3000);
-    }
-});
-				
-				confirmContainer.appendChild(backButton);
-				confirmContainer.appendChild(confirmButton);
-				document.body.appendChild(confirmContainer);
-		} else {
-				const confirmButton = confirmContainer.querySelector('.confirmation__button');
-				confirmButton.innerHTML = `${firstProgram}, ${secondProgram} &#8211; Potvrdit?`;
+	const programDivs = document.querySelectorAll('.programs__program');
+	
+	// Check if we have valid selection
+	let canConfirm = false;
+	let firstProgram = '';
+	let secondProgram = '';
+	
+	if (selectedPrograms.length === 1) {
+		const programType = getProgramBlocks(programDivs[selectedPrograms[0]]);
+		if (programType === 'merged') {
+			// Merged program selected - can confirm
+			canConfirm = true;
+			const programText = programDivs[selectedPrograms[0]].querySelector('.program__title > span').textContent;
+			firstProgram = programText;
+			secondProgram = programText;
 		}
-	} else {
-		if (confirmContainer) {
-				confirmContainer.remove();
+	} else if (selectedPrograms.length === 2) {
+		// Two programs selected - need to assign to blocks
+		canConfirm = true;
+		
+		const firstProgramDiv = programDivs[selectedPrograms[0]];
+		const secondProgramDiv = programDivs[selectedPrograms[1]];
+		
+		const firstProgramText = firstProgramDiv.querySelector('.program__title > span').textContent;
+		const secondProgramText = secondProgramDiv.querySelector('.program__title > span').textContent;
+		
+		const firstType = getProgramBlocks(firstProgramDiv);
+		const secondType = getProgramBlocks(secondProgramDiv);
+		
+		// Assign to blocks based on types
+		if (firstType === 'block1' || (firstType === 'both' && secondType === 'block2')) {
+			firstProgram = firstProgramText;
+			secondProgram = secondProgramText;
+		} else if (firstType === 'block2' || (firstType === 'both' && secondType === 'block1')) {
+			firstProgram = secondProgramText;
+			secondProgram = firstProgramText;
+		} else {
+			// Both are 'both' type - assign in order
+			firstProgram = firstProgramText;
+			secondProgram = secondProgramText;
 		}
 	}
+	
+	if (canConfirm) {
+		if (!confirmContainer) {
+			confirmContainer = document.createElement('div');
+			confirmContainer.className = 'confirmation__container';
+			
+			const backButton = document.createElement('button');
+			backButton.className = 'confirmation__back';
+			backButton.textContent = 'Zpět';
+			backButton.type = 'button';
+			backButton.addEventListener('click', () => {
+				confirmContainer.remove();
+			});
+			
+			const confirmButton = document.createElement('button');
+			confirmButton.className = 'confirmation__button';
+			confirmButton.type = 'button';
+			
+			if (firstProgram === secondProgram) {
+				confirmButton.innerHTML = `${firstProgram} (SPOJENÉ)<br>Potvrdit?`;
+			} else {
+				confirmButton.innerHTML = `Blok 1: ${firstProgram}<br>Blok 2: ${secondProgram}<br>Potvrdit?`;
+			}
+			
+			confirmButton.addEventListener('click', async () => {
+                try {
+                    const hasSubmitted = localStorage.getItem('hasSubmittedPrograms');
+                    if (hasSubmitted === 'true') {
+                        confirmButton.textContent = 'Již odesláno!';
+                        confirmButton.style.backgroundColor = 'var(--neutral-color)';
+                        confirmButton.disabled = true;
+                        return;
+                    }
+                    
+                    const name = localStorage.getItem('userName');
+                    const className = localStorage.getItem('userClass');
+                    
+                    confirmButton.disabled = true;
+                    confirmButton.textContent = 'Odesílání...';
+                    
+                    const url = `${GOOGLE_SHEET_API}?name=${encodeURIComponent(name)}&class=${encodeURIComponent(className)}&firstProgram=${encodeURIComponent(firstProgram)}&secondProgram=${encodeURIComponent(secondProgram)}`;
+                    
+                    const res = await fetch(url, {
+                        method: "GET",
+                        redirect: "follow"
+                    });
+                    
+                    const result = await res.json();
+                    
+                    if (result.status === "success") {
+                        localStorage.setItem('hasSubmittedPrograms', 'true');
+                        localStorage.setItem('firstProgramSubmitted', firstProgram);
+                        localStorage.setItem('secondProgramSubmitted', secondProgram);
+                        
+                        confirmButton.textContent = 'Úspěšně odesláno!';
+                        confirmButton.style.backgroundColor = 'var(--green-color)';
+                        
+                        document.querySelectorAll('.program__button').forEach(btn => {
+                            btn.disabled = true;
+                        });
+                        
+                        displaySelectedPrograms(firstProgram, secondProgram);
+                        
+                        await fetchCapacityFromSheet();
+                        
+                        setTimeout(() => {
+                            window.location.hash = '#reg';
+                            confirmContainer.remove();
+                        }, 2000);
+                    } else {
+                        throw new Error('Failed to save data');
+                    }
+                } catch (error) {
+                    console.error('Error submitting data:', error);
+                    confirmButton.textContent = 'Chyba! Zkuste to znovu.';
+                    confirmButton.style.backgroundColor = 'var(--red-color)';
+                    confirmButton.disabled = false;
+                    
+                    setTimeout(() => {
+                        if (firstProgram === secondProgram) {
+                            confirmButton.innerHTML = `${firstProgram} (SPOJENÉ)<br>Potvrdit?`;
+                        } else {
+                            confirmButton.innerHTML = `Blok 1: ${firstProgram}<br>Blok 2: ${secondProgram}<br>Potvrdit?`;
+                        }
+                        confirmButton.style.backgroundColor = 'var(--green-color)';
+                    }, 3000);
+                }
+            });
+            
+            confirmContainer.appendChild(backButton);
+            confirmContainer.appendChild(confirmButton);
+            document.body.appendChild(confirmContainer);
+        } else {
+            const confirmButton = confirmContainer.querySelector('.confirmation__button');
+            if (firstProgram === secondProgram) {
+                confirmButton.innerHTML = `${firstProgram} (SPOJENÉ)<br>Potvrdit?`;
+            } else {
+                confirmButton.innerHTML = `Blok 1: ${firstProgram}<br>Blok 2: ${secondProgram}<br>Potvrdit?`;
+            }
+        }
+    } else {
+        if (confirmContainer) {
+            confirmContainer.remove();
+        }
+    }
 }
-
-// Add new function to display selected programs
 function displaySelectedPrograms(firstProgram, secondProgram) {
     // Remove existing programs display if any
     const existingDisplay = document.querySelector('.reg__programs');
     if (existingDisplay) {
         existingDisplay.remove();
     }
+
+	 const firstProgramClass = classes[firstProgram] || '...';
+    const secondProgramClass = classes[secondProgram] || '...';
     
     // Create new programs display
     const programsDisplay = document.createElement('div');
     programsDisplay.className = 'reg__programs';
-    programsDisplay.innerHTML = `První program &#8211; ${firstProgram}<br>Druhý program &#8211; ${secondProgram}`;
+    programsDisplay.innerHTML = `První program (${firstProgramClass}) &#8211; ${firstProgram}<br>Druhý program (${secondProgramClass}) &#8211; ${secondProgram}`;
     
     // Insert after reg__name
     const regName = document.querySelector('.reg__name');
@@ -284,43 +506,56 @@ document.querySelector('.action__reg').addEventListener('submit', (e) => {
 	updateProgramButtons();
 });
 
+// Replace the fetchCapacityFromSheet function with this:
 async function fetchCapacityFromSheet() {
-	try {
-		const res = await fetch(`${GOOGLE_SHEET_API}?action=getCapacity`, {
-				method: "GET",
-				redirect: "follow"
-		});
-		
-		const result = await res.json();
-		
-		if (result.status === "success") {
-				const capacityData = result.data;
-				
-				const programDivs = document.querySelectorAll('.programs__program');
-				
-				programDivs.forEach((programDiv, index) => {
-					const programTitle = programDiv.querySelector('.program__title > span').textContent;
-					const capacityDiv = programDiv.querySelector('.program__capacity');
-					
-					let currentCapacity = 0;
-					const maxCapacity = 70;
-					
-					if (programTitle === 'Politologie') {
-						currentCapacity = capacityData.politologie;
-					} else if (programTitle === 'Ekonomie') {
-						currentCapacity = capacityData.ekonomie;
-					} else if (programTitle === 'Programování') {
-						currentCapacity = capacityData.programovani;
-					}
-					
-					capacityDiv.textContent = `${currentCapacity} / ${maxCapacity}`;
-				});
-				
-				updateProgramButtons();
-		}
-	} catch (error) {
-		console.error('Error fetching capacity:', error);
-	}
+    try {
+        const res = await fetch(`${GOOGLE_SHEET_API}?action=getCapacity`, {
+            method: "GET",
+            redirect: "follow"
+        });
+        
+        const result = await res.json();
+        
+        if (result.status === "success") {
+            const capacityData = result.data;
+            
+            const programDivs = document.querySelectorAll('.programs__program');
+            
+            programDivs.forEach((programDiv) => {
+                const programTitle = programDiv.querySelector('.program__title > span').textContent.trim();
+                const capacityDiv = programDiv.querySelector('.program__capacity');
+                
+                if (capacityData[programTitle]) {
+                    const program = capacityData[programTitle];
+                    
+                    if (program.type === 'spojene') {
+                        // Type 5: SPOJENÉ - merged cells
+                        capacityDiv.textContent = `${program.current} / ${program.max} (SPOJENÉ)`;
+                    } else if (program.type === 'separate') {
+                        // Types 1-4: Separate blocks
+                        let capacityText = '';
+                        
+                        if (program.firstBlock.available && program.secondBlock.available) {
+                            // Type 1 or 2: Both blocks available
+                            capacityText = `Blok 1: ${program.firstBlock.current}/${program.firstBlock.max} | Blok 2: ${program.secondBlock.current}/${program.secondBlock.max}`;
+                        } else if (program.firstBlock.available && !program.secondBlock.available) {
+                            // Type 4: Only first block
+                            capacityText = `Blok 1: ${program.firstBlock.current}/${program.firstBlock.max}`;
+                        } else if (!program.firstBlock.available && program.secondBlock.available) {
+                            // Type 3: Only second block
+                            capacityText = `Blok 2: ${program.secondBlock.current}/${program.secondBlock.max}`;
+                        }
+                        
+                        capacityDiv.textContent = capacityText;
+                    }
+                }
+            });
+            
+            updateProgramButtons();
+        }
+    } catch (error) {
+        console.error('Error fetching capacity:', error);
+    }
 }
 
 window.addEventListener('DOMContentLoaded', () => {
@@ -377,8 +612,9 @@ window.addEventListener('DOMContentLoaded', () => {
         const gradientText = document.querySelector('.action__text-gradient');
         const headerLink = document.querySelector('.header__reg-opened');
         
+        // Show only name in header
         if (headerLink) {
-            headerLink.textContent = isTeacher ? `${savedName}` : `${savedName} ${savedClass}`;
+            headerLink.textContent = savedName;
         }
         
         nameInput.value = isTeacher ? `${savedName}` : `${savedName} ${savedClass}`;
@@ -419,7 +655,7 @@ const originalPlaceholder = classInput.placeholder;
 teacherCheckbox.addEventListener('change', (e) => {
     if (e.target.checked) {
         // When teacher checkbox is checked
-        classInput.value = 'Učitel/učitelka';
+        classInput.value = 'Učitel/Učitelka';
         classInput.disabled = true;
         classInput.removeAttribute('pattern');
         classInput.removeAttribute('required');
@@ -454,8 +690,9 @@ document.querySelector('.action__reg').addEventListener('submit', (e) => {
     localStorage.setItem('userClass', className);
     localStorage.setItem('isTeacher', isTeacher);
     
+    // Show only name in header
     if (headerLink) {
-        headerLink.textContent = isTeacher ? `${name}` : `${name} ${className}`;
+        headerLink.textContent = name;
     }
     
     nameInput.value = isTeacher ? `${name}` : `${name} ${className}`;
@@ -471,6 +708,10 @@ document.querySelector('.action__reg').addEventListener('submit', (e) => {
     gradientText.textContent = 'Vybírej už teď!';
     
     updateProgramButtons();
+    
+    setTimeout(() => {
+        window.location.hash = '#programs';
+    }, 1000);
 });
 
 // Update the window load handler to restore teacher state
@@ -528,8 +769,9 @@ window.addEventListener('DOMContentLoaded', () => {
         const gradientText = document.querySelector('.action__text-gradient');
         const headerLink = document.querySelector('.header__reg-opened');
         
+        // Show only name in header
         if (headerLink) {
-            headerLink.textContent = isTeacher ? `${savedName}` : `${savedName} ${savedClass}`;
+            headerLink.textContent = savedName;
         }
         
         nameInput.value = isTeacher ? `${savedName}` : `${savedName} ${savedClass}`;
