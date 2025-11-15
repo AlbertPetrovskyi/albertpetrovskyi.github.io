@@ -427,7 +427,8 @@ body {
 	line-height: 1.8;
 }
 
-.reg__accept {
+.reg__accept,
+.reg__teacher {
 	display: flex;
 }
 
@@ -438,7 +439,8 @@ body {
 	margin-right: 1rem;
 }
 
-.reg__accept span {
+.reg__accept span,
+.reg__teacher span {
 	font-size: 1.2rem;
 	color: var(--dark-color);
 	text-align: left;
@@ -727,7 +729,8 @@ body {
 		color: var(--neutral-color);
 	}
 
-	.reg__accept span {
+	.reg__accept span,
+	.reg__teacher span {
 		font-size: 1.5rem;
 	}
 

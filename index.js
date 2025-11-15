@@ -1,52 +1,53 @@
-const targetDate = new Date('2025-11-17T00:00:00+01:00');
+const targetDate = new Date('2025-11-14T00:00:00+01:00');
 const GOOGLE_SHEET_API = 'https://script.google.com/macros/s/AKfycbxUlTEanoHNBFz9i-GLNh7RFnSLgVqfQnS-ZLReROUeCgtGYdQZAi4bEpE1ffpcsic/exec';
+const classes = {
+	'1': '3.B4',
+};
 
 function updateCountdown() {
-	const now = new Date();
-	const difference = targetDate - now;
+    const now = new Date();
+    const difference = targetDate - now;
 
-	const headerReg = document.querySelector('.header__reg');
-	const nameInput = document.querySelector('.reg__name input');
-	const classInput = document.querySelector('.reg__class input');
-	const checkboxInput = document.querySelector('.reg__checkbox');
-	const submitButton = document.querySelector('.reg__button');
+    const headerReg = document.querySelector('.header__reg');
+    const nameInput = document.querySelector('.reg__name input');
+    const classInput = document.querySelector('.reg__class input');
+    const checkboxInputs = document.querySelectorAll('.reg__checkbox');
+    const submitButton = document.querySelector('.reg__button');
 
-	if (difference <= 0) {
-		const newLink = document.createElement('a');
-		newLink.className = 'header__reg-opened';
-		newLink.href = '#reg';
-		newLink.textContent = 'Přihlásit se';
-		headerReg.parentNode.replaceChild(newLink, headerReg);
-		
-		nameInput.disabled = false;
-		classInput.disabled = false;
-		checkboxInput.disabled = false;
-		submitButton.disabled = false;
-		
-		
-		updateProgramButtons();
-		
-		clearInterval(countdownInterval);
-		return;
-	}
+    if (difference <= 0) {
+        const newLink = document.createElement('a');
+        newLink.className = 'header__reg-opened';
+        newLink.href = '#reg';
+        newLink.textContent = 'Přihlásit se';
+        headerReg.parentNode.replaceChild(newLink, headerReg);
+        
+        nameInput.disabled = false;
+        classInput.disabled = false;
+        checkboxInputs.forEach(checkbox => checkbox.disabled = false);
+        submitButton.disabled = false;
+        
+        updateProgramButtons();
+        
+        clearInterval(countdownInterval);
+        return;
+    }
 
-	nameInput.disabled = true;
-	classInput.disabled = true;
-	checkboxInput.disabled = true;
-	submitButton.disabled = true;
-	
-	
-	updateProgramButtons();
+    nameInput.disabled = true;
+    classInput.disabled = true;
+    checkboxInputs.forEach(checkbox => checkbox.disabled = true);
+    submitButton.disabled = true;
+    
+    updateProgramButtons();
 
-	const days = Math.floor(difference / (1000 * 60 * 60 * 24));
-	const hours = Math.floor((difference % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-	const minutes = Math.floor((difference % (1000 * 60 * 60)) / (1000 * 60));
+    const days = Math.floor(difference / (1000 * 60 * 60 * 24));
+    const hours = Math.floor((difference % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+    const minutes = Math.floor((difference % (1000 * 60 * 60)) / (1000 * 60));
 
-	const formattedDays = String(days).padStart(2, '0');
-	const formattedHours = String(hours).padStart(2, '0');
-	const formattedMinutes = String(minutes).padStart(2, '0');
+    const formattedDays = String(days).padStart(2, '0');
+    const formattedHours = String(hours).padStart(2, '0');
+    const formattedMinutes = String(minutes).padStart(2, '0');
 
-	headerReg.textContent = `Přihlášení začne za ${formattedDays}:${formattedHours}:${formattedMinutes}`;
+    headerReg.textContent = `Přihlášení začne za ${formattedDays}:${formattedHours}:${formattedMinutes}`;
 }
 
 let selectedPrograms = [];
@@ -327,6 +328,7 @@ window.addEventListener('DOMContentLoaded', () => {
     const savedClass = localStorage.getItem('userClass');
     const savedPrograms = localStorage.getItem('selectedPrograms');
     const hasSubmitted = localStorage.getItem('hasSubmittedPrograms');
+    const isTeacher = localStorage.getItem('isTeacher') === 'true';
     
     document.querySelectorAll('.program__description').forEach(description => {
         description.style.display = 'none';
@@ -370,20 +372,172 @@ window.addEventListener('DOMContentLoaded', () => {
         const nameInput = document.querySelector('.reg__name input');
         const classDiv = document.querySelector('.reg__class');
         const acceptLabel = document.querySelector('.reg__accept');
+        const teacherLabel = document.querySelector('.reg__teacher');
         const submitButton = document.querySelector('.reg__button');
         const gradientText = document.querySelector('.action__text-gradient');
         const headerLink = document.querySelector('.header__reg-opened');
         
         if (headerLink) {
-            headerLink.textContent = `${savedName} ${savedClass}`;
+            headerLink.textContent = isTeacher ? `${savedName}` : `${savedName} ${savedClass}`;
         }
         
-        nameInput.value = `${savedName} ${savedClass}`;
+        nameInput.value = isTeacher ? `${savedName}` : `${savedName} ${savedClass}`;
         nameInput.disabled = true;
         
         if (classDiv) classDiv.remove();
-        
         if (acceptLabel) acceptLabel.remove();
+        if (teacherLabel) teacherLabel.remove();
+        
+        submitButton.textContent = 'Děkujeme za přihlášení!';
+        submitButton.disabled = true;
+        
+        if (gradientText) {
+            if (hasSubmitted === 'true') {
+                gradientText.textContent = 'Řekni ostatním!';
+            } else {
+                gradientText.textContent = 'Vybírej už teď!';
+            }
+        }
+        
+        if (hasSubmitted === 'true') {
+            const firstProgram = localStorage.getItem('firstProgramSubmitted');
+            const secondProgram = localStorage.getItem('secondProgramSubmitted');
+            if (firstProgram && secondProgram) {
+                displaySelectedPrograms(firstProgram, secondProgram);
+            }
+        }
+    }
+    
+    updateProgramButtons();
+});
+
+const teacherCheckbox = document.querySelector('.reg__teacher input');
+const classInput = document.querySelector('.reg__class input');
+const originalPattern = classInput.pattern;
+const originalPlaceholder = classInput.placeholder;
+
+teacherCheckbox.addEventListener('change', (e) => {
+    if (e.target.checked) {
+        // When teacher checkbox is checked
+        classInput.value = 'Učitel/učitelka';
+        classInput.disabled = true;
+        classInput.removeAttribute('pattern');
+        classInput.removeAttribute('required');
+    } else {
+        // When teacher checkbox is unchecked
+        classInput.value = '';
+        classInput.disabled = false;
+        classInput.pattern = originalPattern;
+        classInput.placeholder = originalPlaceholder;
+        classInput.setAttribute('required', '');
+    }
+});
+
+// Also update the form submit handler to handle teacher case
+document.querySelector('.action__reg').addEventListener('submit', (e) => {
+    e.preventDefault();
+    
+    const nameInput = document.querySelector('.reg__name input');
+    const classInput = document.querySelector('.reg__class input');
+    const classDiv = document.querySelector('.reg__class');
+    const acceptLabel = document.querySelector('.reg__accept');
+    const teacherLabel = document.querySelector('.reg__teacher');
+    const submitButton = document.querySelector('.reg__button');
+    const gradientText = document.querySelector('.action__text-gradient');
+    const headerLink = document.querySelector('.header__reg-opened');
+    
+    const name = nameInput.value;
+    const className = classInput.value;
+    const isTeacher = teacherCheckbox.checked;
+    
+    localStorage.setItem('userName', name);
+    localStorage.setItem('userClass', className);
+    localStorage.setItem('isTeacher', isTeacher);
+    
+    if (headerLink) {
+        headerLink.textContent = isTeacher ? `${name}` : `${name} ${className}`;
+    }
+    
+    nameInput.value = isTeacher ? `${name}` : `${name} ${className}`;
+    nameInput.disabled = true;
+    
+    classDiv.remove();
+    acceptLabel.remove();
+    teacherLabel.remove();
+    
+    submitButton.textContent = 'Děkujeme za přihlášení!';
+    submitButton.disabled = true;
+    
+    gradientText.textContent = 'Vybírej už teď!';
+    
+    updateProgramButtons();
+});
+
+// Update the window load handler to restore teacher state
+window.addEventListener('DOMContentLoaded', () => {
+    const savedName = localStorage.getItem('userName');
+    const savedClass = localStorage.getItem('userClass');
+    const savedPrograms = localStorage.getItem('selectedPrograms');
+    const hasSubmitted = localStorage.getItem('hasSubmittedPrograms');
+    const isTeacher = localStorage.getItem('isTeacher') === 'true';
+    
+    document.querySelectorAll('.program__description').forEach(description => {
+        description.style.display = 'none';
+    });
+    
+    document.querySelectorAll('.program__title svg').forEach(arrow => {
+        arrow.style.transform = 'rotate(0deg)';
+    });
+    
+    fetchCapacityFromSheet();
+    
+    if (savedPrograms) {
+        selectedPrograms = JSON.parse(savedPrograms);
+        
+        document.querySelectorAll('.program__button').forEach((button, index) => {
+            if (selectedPrograms.includes(index)) {
+                button.style.border = '2px solid var(--green-color)';
+                button.style.color = 'var(--green-color)';
+                button.style.backgroundColor = 'var(--light-color)';
+                
+                const svg = button.querySelector('svg');
+                if (svg) {
+                    svg.querySelector('path').style.fill = 'var(--green-color)';
+                    button.innerHTML = '';
+                    button.appendChild(svg);
+                    button.appendChild(document.createTextNode('Vybráno'));
+                }
+            }
+            
+            if (hasSubmitted === 'true') {
+                button.disabled = true;
+            }
+        });
+        
+        if (hasSubmitted !== 'true') {
+            updateConfirmationButton();
+        }
+    }
+    
+    if (savedName && savedClass) {
+        const nameInput = document.querySelector('.reg__name input');
+        const classDiv = document.querySelector('.reg__class');
+        const acceptLabel = document.querySelector('.reg__accept');
+        const teacherLabel = document.querySelector('.reg__teacher');
+        const submitButton = document.querySelector('.reg__button');
+        const gradientText = document.querySelector('.action__text-gradient');
+        const headerLink = document.querySelector('.header__reg-opened');
+        
+        if (headerLink) {
+            headerLink.textContent = isTeacher ? `${savedName}` : `${savedName} ${savedClass}`;
+        }
+        
+        nameInput.value = isTeacher ? `${savedName}` : `${savedName} ${savedClass}`;
+        nameInput.disabled = true;
+        
+        if (classDiv) classDiv.remove();
+        if (acceptLabel) acceptLabel.remove();
+        if (teacherLabel) teacherLabel.remove();
         
         submitButton.textContent = 'Děkujeme za přihlášení!';
         submitButton.disabled = true;
