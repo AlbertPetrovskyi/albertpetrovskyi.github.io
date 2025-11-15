@@ -1,5 +1,5 @@
 const targetDate = new Date('2025-11-14T00:00:00+01:00');
-const GOOGLE_SHEET_API = 'https://script.google.com/macros/s/AKfycbyVYDGLSC8x7tfeR_HXajxztM3g0dMNc63Yr3pBqHYJACS3aDAOe7L6HPdBdPTeppu7/exec';
+const GOOGLE_SHEET_API = 'https://script.google.com/macros/s/AKfycbxZN92-noeF8Aq9vAerbgzwBMM_v0F8-92QVWNHk6nJSyK-kw6ivlwMdTIm7k9svGSG/exec';
 const classes = {
 	'Jak to bylo roku 1989 na Hejčíně': 'A168',
 	'Vzpomínky na Sametovou revoluci v Olomouci': 'B280',
@@ -868,4 +868,58 @@ document.querySelectorAll('.program__title').forEach(title => {
 				arrow.style.transform = 'rotate(0deg)';
 		}
 	});
+});
+
+// Likes functionality
+document.querySelectorAll('.programs__header').forEach((header, index) => {
+    const heartSvg = header.querySelector('svg');
+    const likeCount = header.querySelector('span:last-child');
+    const programDiv = header.closest('.programs__program');
+    const programTitle = programDiv.querySelector('.program__title > span').textContent.trim();
+    
+    // Check if already liked
+    const likedPrograms = JSON.parse(localStorage.getItem('likedPrograms') || '{}');
+    
+    if (likedPrograms[programTitle]) {
+        // Already liked - show filled heart and disable
+        heartSvg.innerHTML = '<path d="M8.66212 15.2197C9.37321 15.2197 10.0646 14.9336 10.5742 14.4238L15.6992 9.2959L15.707 9.28809C16.705 8.2639 17.2592 6.88713 17.25 5.45703C17.2408 4.02697 16.6692 2.65777 15.6582 1.64648C14.6472 0.635201 13.2784 0.0636676 11.8486 0.0546875C10.7 0.0474973 9.58641 0.404168 8.66212 1.0625C7.73783 0.404168 6.62422 0.0474973 5.47562 0.0546875C4.04581 0.0636676 2.67701 0.635201 1.66597 1.64648C0.654932 2.65777 0.0833988 4.02697 0.0742188 5.45703C0.0650388 6.88713 0.619219 8.2639 1.61722 9.28809L1.62502 9.2959L6.75002 14.4238C7.25962 14.9336 7.95102 15.2197 8.66212 15.2197Z" fill="#D7141A"/>';
+        heartSvg.style.pointerEvents = 'none';
+        heartSvg.style.opacity = '0.7';
+        likeCount.textContent = parseInt(likeCount.textContent) || 0;
+    } else {
+        // Not liked - enable click
+        heartSvg.style.cursor = 'pointer';
+        
+        heartSvg.addEventListener('click', async (e) => {
+            e.stopPropagation();
+            
+            // Change to filled heart
+            heartSvg.innerHTML = '<path d="M8.66212 15.2197C9.37321 15.2197 10.0646 14.9336 10.5742 14.4238L15.6992 9.2959L15.707 9.28809C16.705 8.2639 17.2592 6.88713 17.25 5.45703C17.2408 4.02697 16.6692 2.65777 15.6582 1.64648C14.6472 0.635201 13.2784 0.0636676 11.8486 0.0546875C10.7 0.0474973 9.58641 0.404168 8.66212 1.0625C7.73783 0.404168 6.62422 0.0474973 5.47562 0.0546875C4.04581 0.0636676 2.67701 0.635201 1.66597 1.64648C0.654932 2.65777 0.0833988 4.02697 0.0742188 5.45703C0.0650388 6.88713 0.619219 8.2639 1.61722 9.28809L1.62502 9.2959L6.75002 14.4238C7.25962 14.9336 7.95102 15.2197 8.66212 15.2197Z" fill="#D7141A"/>';
+            
+            // Disable further clicks
+            heartSvg.style.pointerEvents = 'none';
+            heartSvg.style.opacity = '0.7';
+            heartSvg.style.cursor = 'default';
+            
+            // Update count
+            const currentCount = parseInt(likeCount.textContent) || 0;
+            likeCount.textContent = currentCount + 1;
+            
+            // Save to localStorage
+            const likedPrograms = JSON.parse(localStorage.getItem('likedPrograms') || '{}');
+            likedPrograms[programTitle] = true;
+            localStorage.setItem('likedPrograms', JSON.stringify(likedPrograms));
+            
+            // Optional: Send to backend
+            try {
+                const url = `${GOOGLE_SHEET_API}?action=like&program=${encodeURIComponent(programTitle)}`;
+                await fetch(url, {
+                    method: "GET",
+                    redirect: "follow"
+                });
+            } catch (error) {
+                console.error('Error sending like:', error);
+            }
+        });
+    }
 });
