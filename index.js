@@ -359,7 +359,7 @@ function updateConfirmationButton() {
 			confirmButton.type = 'button';
 			
 			if (firstProgram === secondProgram) {
-				confirmButton.innerHTML = `${firstProgram} (SPOJENÉ)<br>Potvrdit?`;
+				confirmButton.innerHTML = `${firstProgram} <br>Potvrdit?`;
 			} else {
 				confirmButton.innerHTML = `Blok 1: ${firstProgram}<br>Blok 2: ${secondProgram}<br>Potvrdit?`;
 			}
@@ -447,23 +447,25 @@ function updateConfirmationButton() {
     }
 }
 function displaySelectedPrograms(firstProgram, secondProgram) {
-    // Remove existing programs display if any
-    const existingDisplay = document.querySelector('.reg__programs');
-    if (existingDisplay) {
-        existingDisplay.remove();
-    }
+	const existingDisplay = document.querySelector('.reg__programs');
+	if (existingDisplay) {
+		existingDisplay.remove();
+	}
 
-	 const firstProgramClass = classes[firstProgram] || '...';
-    const secondProgramClass = classes[secondProgram] || '...';
-    
-    // Create new programs display
-    const programsDisplay = document.createElement('div');
-    programsDisplay.className = 'reg__programs';
-    programsDisplay.innerHTML = `První program (${firstProgramClass}) &#8211; ${firstProgram}<br>Druhý program (${secondProgramClass}) &#8211; ${secondProgram}`;
-    
-    // Insert after reg__name
-    const regName = document.querySelector('.reg__name');
-    regName.parentNode.insertBefore(programsDisplay, regName.nextSibling);
+	const firstProgramClass = classes[firstProgram] || '...';
+	const secondProgramClass = classes[secondProgram] || '...';
+	
+	const programsDisplay = document.createElement('div');
+	programsDisplay.className = 'reg__programs';
+	
+	if (firstProgram === secondProgram) {
+		programsDisplay.innerHTML = `Spojený program (${firstProgramClass}) &#8211; ${firstProgram}`;
+	} else {
+		programsDisplay.innerHTML = `První program (${firstProgramClass}) &#8211; ${firstProgram}<br>Druhý program (${secondProgramClass}) &#8211; ${secondProgram}`;
+	}
+	
+	const regName = document.querySelector('.reg__name');
+	regName.parentNode.insertBefore(programsDisplay, regName.nextSibling);
 }
 
 const countdownInterval = setInterval(updateCountdown, 60000);
